@@ -7,7 +7,11 @@
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Magazzino">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap">
 <style>
@@ -712,11 +716,19 @@ const SHEETS={
     <button class="btn primary" style="width:100%" data-act="saveKit" data-id="${k?k.id:''}">${k?'Salva':'Crea kit'}</button>
     ${k?`<div class="row-btns"><button class="btn danger" data-act="delKit" data-id="${k.id}">Elimina kit</button></div>`:''}`;
   },
+  iosHint(){
+    return `<h3>Installa su iPhone</h3><div class="sub">Su iPhone l'app installata non vede il collegamento fatto in Safari: va collegata una volta sola con il link di invito.</div>
+    <div class="note" style="margin:0 0 12px"><span class="tx"><b>1.</b> Tocca qui sotto per copiare il link di invito.<br><b>2.</b> In Safari tocca <b>Condividi</b> (il quadrato con la freccia) → <b>Aggiungi alla schermata Home</b> → <b>Aggiungi</b>.<br><b>3.</b> Apri <b>Magazzino</b> dalla Home e tocca <b>Incolla il link di invito</b>.</span></div>
+    <button class="btn primary" style="width:100%" data-act="copyInvite">Copia link di invito</button>
+    <div class="row-btns"><button class="btn" data-act="hintDone">Già fatto, chiudi</button></div>`;
+  },
   settings(){
     return `<h3>Impostazioni</h3>
     <div class="sw"><span>Accessori automatici<small>Scegliendo una camera aggiunge scheda, batterie e caricatore liberi</small></span><button class="tg" role="switch" aria-checked="${S.autoOn}" data-act="autoOn"></button></div>
     <div class="sw"><span>Mostra pezzi extra<small>Attrezzatura vecchia o usata di rado</small></span><button class="tg" role="switch" aria-checked="${S.showExtra}" data-act="extra"></button></div>
     <div class="sw"><span>Aggiorna adesso<small>${offline?'Offline: stai vedendo gli ultimi dati scaricati':'I dati si aggiornano da soli ogni 15 secondi'}</small></span><button class="btn" style="flex:none;padding:0 16px" data-act="reload">Aggiorna</button></div>
+    <div class="sw"><span>Link di invito<small>Per collegare un altro telefono o l'app su iPhone</small></span><button class="btn" style="flex:none;padding:0 16px" data-act="copyInvite">Copia</button></div>
+    ${IOS&&!STANDALONE?'<div class="sw"><span>Installa su iPhone<small>Condividi → Aggiungi alla schermata Home</small></span><button class="btn" style="flex:none;padding:0 16px" data-act="iosHint">Come</button></div>':''}
     <div class="sw"><span>Collegamento<small>Archivio: Google Sheet Magazzino RF</small></span><button class="btn danger" style="flex:none;padding:0 16px" data-act="unlink">Scollega</button></div>`;
   }
 };
@@ -779,6 +791,9 @@ const ACT={
     else{const nid=rid('k');S.kits.set(nid,{id:nid,name,note,items:[]});write('kits/'+nid,'set',{name,note,items:[]});history.back();setTimeout(()=>go({v:'kit',id:nid}),60)}},
   delKit:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'dk','Tocca di nuovo per eliminare',()=>{const id=b.dataset.id;S.kits.delete(id);write('kits/'+id,'delete');history.go(-2)})},
   rmKitItem:b=>{const k=S.kits.get(R().id);if(!k)return;const id=b.dataset.id;k.items=k.items.filter(x=>x!==id);write('kits/'+k.id,'update',{items:[...k.items]});refresh()},
+  copyInvite:async()=>{const l=inviteLink();try{await navigator.clipboard.writeText(l);snack('Link di invito copiato')}catch(_){prompt('Copia il link:',l)}},
+  iosHint:()=>{closeSheet();setTimeout(()=>openSheet({t:'iosHint'}),80)},
+  hintDone:()=>{LS.set('rf-ios-hint',true);closeSheet()},
   autoOn:b=>{S.autoOn=!S.autoOn;LS.set('rf-auto',S.autoOn);b.setAttribute('aria-checked',S.autoOn)},
   reload:()=>{loadData();snack('Aggiornamento…')},
   unlink:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'ul','Conferma',()=>{localStorage.removeItem('rf-cfg');localStorage.removeItem('rf-cache');location.replace(location.pathname)})},
@@ -815,21 +830,35 @@ function snack(msg,label,fn){
 }
 
 /* ---------- setup: link with the Google backend ---------- */
+const IOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const STANDALONE=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+function parseInvite(t){
+  t=String(t||'').trim();
+  try{const u=new URL(t);const a=u.searchParams.get('api'),k=u.searchParams.get('k');if(a&&k)return {url:a,key:k}}catch(_){}
+  return null;
+}
+const inviteLink=()=>CFG?location.origin+location.pathname+'?api='+encodeURIComponent(CFG.url)+'&k='+encodeURIComponent(CFG.key):'';
 function showSetup(err){
   $('#app').hidden=true;const el=$('#setup');el.hidden=false;
   el.innerHTML=`<div class="setup"><div class="logo"><svg class="mono-b" viewBox="0 0 34 64" aria-hidden="true"><path d="M11.2,30.7l20.9-12.1L0,0.1v24.1v13v26.3l34-19.6L11.2,30.7z M3.8,6.5l21,12.1L7.6,28.5l-3.8-2.2V6.5z M3.8,35l3.7-2.1l19,11l-22.7,13V35L3.8,35z"/></svg><span>Magazzino</span></div>
-  <p>Agenzia Brief · attrezzatura e produzioni.<br>Apri il link di invito che ti ha mandato Matteo, oppure incolla qui indirizzo e chiave.</p>
-  <label class="fld"><span>Indirizzo app (finisce con /exec)</span><input id="suUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
-  <label class="fld"><span>Chiave</span><input id="suKey" autocomplete="off"></label>
+  <p>Agenzia Brief · attrezzatura e produzioni.<br>Incolla qui il link di invito che ti ha mandato Matteo.</p>
+  ${navigator.clipboard&&navigator.clipboard.readText?'<button class="btn primary" style="width:100%;margin-bottom:14px" id="suPaste">Incolla il link di invito</button>':''}
+  <label class="fld"><span>Link di invito</span><textarea id="suLink" rows="3" placeholder="https://matteobossoni.github.io/magazzino-rf/?api=…&amp;k=…" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea></label>
   ${err?`<div class="err">${esc(err)}</div>`:''}
-  <button class="btn primary" style="width:100%" id="suGo">Collega</button></div>`;
-  $('#suGo').onclick=()=>connect($('#suUrl').value.trim(),$('#suKey').value.trim());
+  <button class="btn" style="width:100%" id="suGo">Collega</button></div>`;
+  const go=t=>{const c=parseInvite(t);if(!c){showSetup('Non sembra un link di invito valido: deve contenere ?api=… e &k=…');return}connect(c.url,c.key)};
+  $('#suGo').onclick=()=>go($('#suLink').value);
+  const ps=$('#suPaste');if(ps)ps.onclick=async()=>{try{const t=await navigator.clipboard.readText();$('#suLink').value=t;go(t)}catch(_){$('#suLink').focus()}};
+}
+function iosInstallHint(){
+  if(!IOS||STANDALONE||LS.get('rf-ios-hint'))return;
+  openSheet({t:'iosHint'});
 }
 async function connect(url,key){
   if(!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)||!key){showSetup('Controlla indirizzo e chiave.');return}
   CFG={url,key};
   const b=$('#suGo');if(b){b.disabled=true;b.textContent='Collegamento…'}
-  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;ingest(r.data);cacheSave();start()}
+  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;ingest(r.data);cacheSave();start();setTimeout(iosInstallHint,600)}
   catch(e){CFG=null;showSetup(String(e.message).includes('Chiave')?'Chiave non valida.':'Non riesco a raggiungere l\'archivio. Controlla l\'indirizzo e che il deployment sia per “Chiunque”.')}
 }
 function start(){
