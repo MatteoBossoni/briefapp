@@ -1,7 +1,7 @@
 {
-  "name": "Magazzino Brief",
-  "short_name": "Magazzino",
-  "description": "Attrezzatura e produzioni di Agenzia Brief",
+  "name": "BriefApp",
+  "short_name": "BriefApp",
+  "description": "Agenzia Brief · attrezzatura e produzioni",
   "lang": "it",
   "start_url": "./",
   "scope": "./",

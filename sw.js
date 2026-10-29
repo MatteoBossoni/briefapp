@@ -1,7 +1,7 @@
 /* Magazzino – service worker.
    Pagina e config: prima la rete (così gli aggiornamenti arrivano subito), copia salvata se offline.
    Icone e font: dalla copia salvata. */
-const V = 'rf-5';
+const V = 'rf-6';
 const SHELL = ['./', './index.html', './config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

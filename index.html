@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Magazzino RF</title>
+<title>BriefApp</title>
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Magazzino">
+<meta name="apple-mobile-web-app-title" content="BriefApp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap">
 <style>
@@ -202,6 +202,7 @@ body.sub .snack{bottom:calc(var(--sab) + 84px)}
 .setup .logo{font-family:var(--f-display);font-weight:700;font-size:40px;text-transform:uppercase;background:var(--fg);color:var(--bg);display:inline-block;padding:0 12px;transform:rotate(-2deg);margin-bottom:20px}
 .setup p{color:var(--muted)}
 .err{color:var(--bad);font-size:14px;margin:-4px 0 12px}
+.app{color:var(--brand);font-weight:inherit}
 
 /* ===== Agenzia Brief theme ===== */
 :root,:root[data-theme]{
@@ -500,7 +501,7 @@ function renderBody(){
 
 /* Produzioni */
 SCR.prods={
-  title:()=>'<svg class="mono-b" viewBox="0 0 34 64" aria-hidden="true"><path d="M11.2,30.7l20.9-12.1L0,0.1v24.1v13v26.3l34-19.6L11.2,30.7z M3.8,6.5l21,12.1L7.6,28.5l-3.8-2.2V6.5z M3.8,35l3.7-2.1l19,11l-22.7,13V35L3.8,35z"/></svg><span>Magazzino</span>',
+  title:()=>'<svg class="mono-b" viewBox="0 0 34 64" aria-hidden="true"><path d="M11.2,30.7l20.9-12.1L0,0.1v24.1v13v26.3l34-19.6L11.2,30.7z M3.8,6.5l21,12.1L7.6,28.5l-3.8-2.2V6.5z M3.8,35l3.7-2.1l19,11l-22.7,13V35L3.8,35z"/></svg><span>Brief<b class="app">App</b></span>',
   acts:()=>`<button class="ib" data-act="settings" aria-label="Impostazioni">${IC.gear}</button>`,
   head:()=>`<div class="seg" role="group"><button data-act="pseg" data-v="up" aria-pressed="${S.pseg==='up'}">In arrivo</button><button data-act="pseg" data-v="past" aria-pressed="${S.pseg==='past'}">Concluse</button></div>`,
   fab:()=>({html:IC.plus,act:'newProd'}),
@@ -719,7 +720,7 @@ const SHEETS={
   },
   iosHint(){
     return `<h3>Installa su iPhone</h3><div class="sub">Prima installa l'app, poi entra con Google dall'app installata.</div>
-    <div class="note" style="margin:0 0 12px"><span class="tx"><b>1.</b> In Safari tocca <b>Condividi</b> (il quadrato con la freccia) → <b>Aggiungi alla schermata Home</b> → <b>Aggiungi</b>.<br><b>2.</b> Apri <b>Magazzino</b> dalla Home e tocca <b>Accedi con Google</b>.<br><b>3.</b> Se dopo l'accesso l'app non si apre da sola: tieni premuto <b>Apri Magazzino</b> → <b>Copia link</b>, torna nell'app e tocca <b>Incolla link di accesso</b>.</span></div>
+    <div class="note" style="margin:0 0 12px"><span class="tx"><b>1.</b> In Safari tocca <b>Condividi</b> (il quadrato con la freccia) → <b>Aggiungi alla schermata Home</b> → <b>Aggiungi</b>.<br><b>2.</b> Apri <b>BriefApp</b> dalla Home e tocca <b>Accedi con Google</b>.<br><b>3.</b> Se dopo l'accesso l'app non si apre da sola: tieni premuto <b>Apri BriefApp</b> → <b>Copia link</b>, torna nell'app e tocca <b>Incolla link di accesso</b>.</span></div>
     <button class="btn primary" style="width:100%" data-act="hintDone">Ho capito</button>`;
   },
   settings(){
@@ -849,9 +850,9 @@ function login(){
 function showSetup(err){
   $('#app').hidden=true;const el=$('#setup');el.hidden=false;
   const iosSafari=IOS&&!STANDALONE;
-  el.innerHTML=`<div class="setup"><div class="logo"><svg class="mono-b" viewBox="0 0 34 64" aria-hidden="true"><path d="M11.2,30.7l20.9-12.1L0,0.1v24.1v13v26.3l34-19.6L11.2,30.7z M3.8,6.5l21,12.1L7.6,28.5l-3.8-2.2V6.5z M3.8,35l3.7-2.1l19,11l-22.7,13V35L3.8,35z"/></svg><span>Magazzino</span></div>
+  el.innerHTML=`<div class="setup"><div class="logo"><svg class="mono-b" viewBox="0 0 34 64" aria-hidden="true"><path d="M11.2,30.7l20.9-12.1L0,0.1v24.1v13v26.3l34-19.6L11.2,30.7z M3.8,6.5l21,12.1L7.6,28.5l-3.8-2.2V6.5z M3.8,35l3.7-2.1l19,11l-22.7,13V35L3.8,35z"/></svg><span>Brief<b class="app">App</b></span></div>
   <p>Agenzia Brief · attrezzatura e produzioni.<br>Entra con il tuo account Google <b>@ripresefirenze.it</b> o <b>@agenziabrief.it</b>.</p>
-  ${iosSafari?`<div class="note" style="margin:0 0 16px"><span class="tx"><b>Su iPhone installa prima l'app:</b> tocca <b>Condividi</b> → <b>Aggiungi alla schermata Home</b>, poi apri Magazzino dalla Home ed entra da lì.</span></div>`:''}
+  ${iosSafari?`<div class="note" style="margin:0 0 16px"><span class="tx"><b>Su iPhone installa prima l'app:</b> tocca <b>Condividi</b> → <b>Aggiungi alla schermata Home</b>, poi apri BriefApp dalla Home ed entra da lì.</span></div>`:''}
   ${err?`<div class="err">${esc(err)}</div>`:''}
   <div id="gsiBtn" style="min-height:48px;margin-bottom:10px;display:flex;justify-content:center"></div>
   <div id="gsiMsg" class="err" hidden></div>
