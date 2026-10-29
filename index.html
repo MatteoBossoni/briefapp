@@ -841,7 +841,10 @@ function expired(){if(expiredShown)return;expiredShown=true;forget();showSetup('
 function login(){
   const L=window.RF_CONFIG||{};
   if(!L.LOGIN_URL||!L.API_URL){showSetup('App non configurata: manca il link di accesso in config.js.');return}
-  location.href=L.LOGIN_URL+'?login=1&api='+encodeURIComponent(L.API_URL);
+  const target=L.LOGIN_URL+'?login=1&api='+encodeURIComponent(L.API_URL);
+  /* passa dalla scelta account di Google: evita che Android apra il link nell'app Drive
+     e permette di scegliere l'account di lavoro se sul telefono ce ne sono più di uno */
+  location.href='https://accounts.google.com/AccountChooser?continue='+encodeURIComponent(target);
 }
 function showSetup(err){
   $('#app').hidden=true;const el=$('#setup');el.hidden=false;
