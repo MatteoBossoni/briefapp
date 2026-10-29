@@ -304,6 +304,7 @@ body{font-size:15px}
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
 <div class="snack" id="snack"><span class="tx"></span><button hidden></button></div>
 
+<script src="config.js"></script>
 <script>
 'use strict';
 const $=s=>document.querySelector(s);
@@ -413,10 +414,10 @@ function toggleProdItem(p,iid){
 
 /* ---------- backend ---------- */
 async function api(fn,...args){
-  const r=await fetch(CFG.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key:CFG.key,fn,args})});
+  const r=await fetch(CFG.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:CFG.token,fn,args})});
   if(!r.ok) throw new Error('HTTP '+r.status);
   const j=await r.json();
-  if(!j.ok) throw new Error(j.error||'Errore');
+  if(!j.ok){if(/Accesso (scaduto|non)/.test(j.error||''))expired();throw new Error(j.error||'Errore')}
   return j.result;
 }
 let inflight=0,reloadT=null,stamp='',offline=false;
@@ -429,7 +430,7 @@ function write(path,op,data){
   inflight++;setSync();
   const next=prev.then(()=>op==='delete'?api('deleteDoc',kind,id):api('saveDoc',kind,id,JSON.stringify(data),op==='set'))
     .then(st=>{if(st)stamp=st;offline=false})
-    .catch(e=>{offline=!navigator.onLine;snack(String(e.message).includes('Chiave')?'Chiave non valida: ricollega l\'app':'Non salvato. Controlla la connessione e riprova.');})
+    .catch(e=>{offline=!navigator.onLine;snack(/Accesso/.test(e.message)?'Accesso scaduto: entra di nuovo con Google':'Non salvato. Controlla la connessione e riprova.');})
     .finally(()=>{inflight--;setSync();clearTimeout(reloadT);reloadT=setTimeout(loadData,800);if(queues.get(path)===next)queues.delete(path)});
   queues.set(path,next);return next;
 }
@@ -445,9 +446,9 @@ async function loadData(){
   if(inflight>0){clearTimeout(reloadT);reloadT=setTimeout(loadData,800);return}
   let r;
   try{r=await api('getData');offline=false}
-  catch(e){offline=true;setSync();if(String(e.message).includes('Chiave'))snack('Chiave non valida: ricollega l\'app');if(!S.loaded)refresh();return}
+  catch(e){offline=true;setSync();if(!S.loaded)refresh();return}
   if(inflight>0){reloadT=setTimeout(loadData,800);return}
-  stamp=r.stamp;ingest(r.data);cacheSave();setSync();refresh();
+  stamp=r.stamp;if(r.me){S.me=r.me;LS.set('rf-me',r.me)}ingest(r.data);cacheSave();setSync();refresh();
 }
 setInterval(async()=>{if(!CFG||document.hidden||inflight>0)return;try{const st=await api('getStamp');offline=false;if(st!==stamp)loadData()}catch(_){offline=true}setSync()},15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CFG){TODAY=iso(new Date());loadData()}});
@@ -717,19 +718,17 @@ const SHEETS={
     ${k?`<div class="row-btns"><button class="btn danger" data-act="delKit" data-id="${k.id}">Elimina kit</button></div>`:''}`;
   },
   iosHint(){
-    return `<h3>Installa su iPhone</h3><div class="sub">Su iPhone l'app installata non vede il collegamento fatto in Safari: va collegata una volta sola con il link di invito.</div>
-    <div class="note" style="margin:0 0 12px"><span class="tx"><b>1.</b> Tocca qui sotto per copiare il link di invito.<br><b>2.</b> In Safari tocca <b>Condividi</b> (il quadrato con la freccia) → <b>Aggiungi alla schermata Home</b> → <b>Aggiungi</b>.<br><b>3.</b> Apri <b>Magazzino</b> dalla Home e tocca <b>Incolla il link di invito</b>.</span></div>
-    <button class="btn primary" style="width:100%" data-act="copyInvite">Copia link di invito</button>
-    <div class="row-btns"><button class="btn" data-act="hintDone">Già fatto, chiudi</button></div>`;
+    return `<h3>Installa su iPhone</h3><div class="sub">Prima installa l'app, poi entra con Google dall'app installata.</div>
+    <div class="note" style="margin:0 0 12px"><span class="tx"><b>1.</b> In Safari tocca <b>Condividi</b> (il quadrato con la freccia) → <b>Aggiungi alla schermata Home</b> → <b>Aggiungi</b>.<br><b>2.</b> Apri <b>Magazzino</b> dalla Home e tocca <b>Accedi con Google</b>.<br><b>3.</b> Se dopo l'accesso l'app non si apre da sola: tieni premuto <b>Apri Magazzino</b> → <b>Copia link</b>, torna nell'app e tocca <b>Incolla link di accesso</b>.</span></div>
+    <button class="btn primary" style="width:100%" data-act="hintDone">Ho capito</button>`;
   },
   settings(){
     return `<h3>Impostazioni</h3>
     <div class="sw"><span>Accessori automatici<small>Scegliendo una camera aggiunge scheda, batterie e caricatore liberi</small></span><button class="tg" role="switch" aria-checked="${S.autoOn}" data-act="autoOn"></button></div>
     <div class="sw"><span>Mostra pezzi extra<small>Attrezzatura vecchia o usata di rado</small></span><button class="tg" role="switch" aria-checked="${S.showExtra}" data-act="extra"></button></div>
     <div class="sw"><span>Aggiorna adesso<small>${offline?'Offline: stai vedendo gli ultimi dati scaricati':'I dati si aggiornano da soli ogni 15 secondi'}</small></span><button class="btn" style="flex:none;padding:0 16px" data-act="reload">Aggiorna</button></div>
-    <div class="sw"><span>Link di invito<small>Per collegare un altro telefono o l'app su iPhone</small></span><button class="btn" style="flex:none;padding:0 16px" data-act="copyInvite">Copia</button></div>
     ${IOS&&!STANDALONE?'<div class="sw"><span>Installa su iPhone<small>Condividi → Aggiungi alla schermata Home</small></span><button class="btn" style="flex:none;padding:0 16px" data-act="iosHint">Come</button></div>':''}
-    <div class="sw"><span>Collegamento<small>Archivio: Google Sheet Magazzino RF</small></span><button class="btn danger" style="flex:none;padding:0 16px" data-act="unlink">Scollega</button></div>`;
+    <div class="sw"><span>Account<small>${esc(S.me||'Account Google aziendale')}</small></span><button class="btn danger" style="flex:none;padding:0 16px" data-act="unlink">Esci</button></div>`;
   }
 };
 
@@ -791,12 +790,11 @@ const ACT={
     else{const nid=rid('k');S.kits.set(nid,{id:nid,name,note,items:[]});write('kits/'+nid,'set',{name,note,items:[]});history.back();setTimeout(()=>go({v:'kit',id:nid}),60)}},
   delKit:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'dk','Tocca di nuovo per eliminare',()=>{const id=b.dataset.id;S.kits.delete(id);write('kits/'+id,'delete');history.go(-2)})},
   rmKitItem:b=>{const k=S.kits.get(R().id);if(!k)return;const id=b.dataset.id;k.items=k.items.filter(x=>x!==id);write('kits/'+k.id,'update',{items:[...k.items]});refresh()},
-  copyInvite:async()=>{const l=inviteLink();try{await navigator.clipboard.writeText(l);snack('Link di invito copiato')}catch(_){prompt('Copia il link:',l)}},
   iosHint:()=>{closeSheet();setTimeout(()=>openSheet({t:'iosHint'}),80)},
   hintDone:()=>{LS.set('rf-ios-hint',true);closeSheet()},
   autoOn:b=>{S.autoOn=!S.autoOn;LS.set('rf-auto',S.autoOn);b.setAttribute('aria-checked',S.autoOn)},
   reload:()=>{loadData();snack('Aggiornamento…')},
-  unlink:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'ul','Conferma',()=>{localStorage.removeItem('rf-cfg');localStorage.removeItem('rf-cache');location.replace(location.pathname)})},
+  unlink:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'ul','Conferma',async()=>{try{await api('logout')}catch(_){}forget();location.replace(location.pathname)})},
 };
 document.addEventListener('click',e=>{
   const g=e.target.closest('[data-go]');
@@ -832,34 +830,42 @@ function snack(msg,label,fn){
 /* ---------- setup: link with the Google backend ---------- */
 const IOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const STANDALONE=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-function parseInvite(t){
+function parseAccess(t){
   t=String(t||'').trim();
-  try{const u=new URL(t);const a=u.searchParams.get('api'),k=u.searchParams.get('k');if(a&&k)return {url:a,key:k}}catch(_){}
+  try{const u=new URL(t);const a=u.searchParams.get('api'),k=u.searchParams.get('t');if(a&&k)return {url:a,token:k}}catch(_){}
   return null;
 }
-const inviteLink=()=>CFG?location.origin+location.pathname+'?api='+encodeURIComponent(CFG.url)+'&k='+encodeURIComponent(CFG.key):'';
+function forget(){['rf-cfg','rf-cache','rf-me'].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});CFG=null}
+let expiredShown=false;
+function expired(){if(expiredShown)return;expiredShown=true;forget();showSetup('Accesso scaduto o revocato: entra di nuovo con Google.')}
+function login(){
+  const L=window.RF_CONFIG||{};
+  if(!L.LOGIN_URL||!L.API_URL){showSetup('App non configurata: manca il link di accesso in config.js.');return}
+  location.href=L.LOGIN_URL+'?login=1&api='+encodeURIComponent(L.API_URL);
+}
 function showSetup(err){
   $('#app').hidden=true;const el=$('#setup');el.hidden=false;
+  const iosSafari=IOS&&!STANDALONE;
   el.innerHTML=`<div class="setup"><div class="logo"><svg class="mono-b" viewBox="0 0 34 64" aria-hidden="true"><path d="M11.2,30.7l20.9-12.1L0,0.1v24.1v13v26.3l34-19.6L11.2,30.7z M3.8,6.5l21,12.1L7.6,28.5l-3.8-2.2V6.5z M3.8,35l3.7-2.1l19,11l-22.7,13V35L3.8,35z"/></svg><span>Magazzino</span></div>
-  <p>Agenzia Brief · attrezzatura e produzioni.<br>Incolla qui il link di invito che ti ha mandato Matteo.</p>
-  ${navigator.clipboard&&navigator.clipboard.readText?'<button class="btn primary" style="width:100%;margin-bottom:14px" id="suPaste">Incolla il link di invito</button>':''}
-  <label class="fld"><span>Link di invito</span><textarea id="suLink" rows="3" placeholder="https://matteobossoni.github.io/magazzino-rf/?api=…&amp;k=…" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea></label>
+  <p>Agenzia Brief · attrezzatura e produzioni.<br>Entra con il tuo account Google <b>@ripresefirenze.it</b> o <b>@agenziabrief.it</b>.</p>
+  ${iosSafari?`<div class="note" style="margin:0 0 16px"><span class="tx"><b>Su iPhone installa prima l'app:</b> tocca <b>Condividi</b> → <b>Aggiungi alla schermata Home</b>, poi apri Magazzino dalla Home ed entra da lì.</span></div>`:''}
   ${err?`<div class="err">${esc(err)}</div>`:''}
-  <button class="btn" style="width:100%" id="suGo">Collega</button></div>`;
-  const go=t=>{const c=parseInvite(t);if(!c){showSetup('Non sembra un link di invito valido: deve contenere ?api=… e &k=…');return}connect(c.url,c.key)};
+  <button class="btn primary" style="width:100%;margin-bottom:14px;height:52px" id="suLogin"><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#000" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>Accedi con Google</button>
+  <details style="margin-top:8px"><summary style="color:var(--muted);font-size:14px;padding:8px 0">Hai già un link di accesso?</summary>
+  ${navigator.clipboard&&navigator.clipboard.readText?'<button class="btn" style="width:100%;margin:8px 0 12px" id="suPaste">Incolla link di accesso</button>':''}
+  <label class="fld"><span>Link di accesso</span><textarea id="suLink" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea></label>
+  <button class="btn" style="width:100%" id="suGo">Collega</button></details></div>`;
+  $('#suLogin').onclick=login;
+  const go=t=>{const c=parseAccess(t);if(!c){showSetup('Non sembra un link di accesso valido.');return}connect(c.url,c.token)};
   $('#suGo').onclick=()=>go($('#suLink').value);
   const ps=$('#suPaste');if(ps)ps.onclick=async()=>{try{const t=await navigator.clipboard.readText();$('#suLink').value=t;go(t)}catch(_){$('#suLink').focus()}};
 }
-function iosInstallHint(){
-  if(!IOS||STANDALONE||LS.get('rf-ios-hint'))return;
-  openSheet({t:'iosHint'});
-}
-async function connect(url,key){
-  if(!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)||!key){showSetup('Controlla indirizzo e chiave.');return}
-  CFG={url,key};
+async function connect(url,token){
+  if(!/^https:\/\/script\.google\.com\//.test(url)||!/^[0-9a-f]{64}$/.test(token)){showSetup('Link di accesso non valido.');return}
+  CFG={url,token};expiredShown=false;
   const b=$('#suGo');if(b){b.disabled=true;b.textContent='Collegamento…'}
-  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;ingest(r.data);cacheSave();start();setTimeout(iosInstallHint,600)}
-  catch(e){CFG=null;showSetup(String(e.message).includes('Chiave')?'Chiave non valida.':'Non riesco a raggiungere l\'archivio. Controlla l\'indirizzo e che il deployment sia per “Chiunque”.')}
+  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;S.me=r.me||'';LS.set('rf-me',S.me);ingest(r.data);cacheSave();start();if(S.me)snack('Ciao '+S.me.split('@')[0].split(/[._-]/)[0].replace(/^./,c=>c.toUpperCase())+'!')}
+  catch(e){if(!/Accesso/.test(e.message)){CFG=null;showSetup('Non riesco a raggiungere l\'archivio. Riprova tra poco.')}}
 }
 function start(){
   $('#setup').hidden=true;$('#app').hidden=false;
@@ -871,9 +877,10 @@ function start(){
 (function boot(){
   S.autoOn=LS.get('rf-auto')!==false;S.showExtra=LS.get('rf-extra')===true;S.mag.date=TODAY;
   const qs=new URLSearchParams(location.search);
-  if(qs.get('api')&&qs.get('k')){history.replaceState(null,'',location.pathname);connect(qs.get('api'),qs.get('k'));return}
-  CFG=LS.get('rf-cfg');
-  if(!CFG){showSetup();return}
+  if(qs.get('api')&&qs.get('t')){history.replaceState(null,'',location.pathname);connect(qs.get('api'),qs.get('t'));return}
+  if(qs.get('k'))history.replaceState(null,'',location.pathname);
+  CFG=LS.get('rf-cfg');S.me=LS.get('rf-me')||'';
+  if(!CFG||!CFG.token){forget();showSetup();if(IOS&&!STANDALONE&&!LS.get('rf-ios-hint'))setTimeout(()=>openSheet({t:'iosHint'}),0);return}
   const c=LS.get('rf-cache');if(c){ingest(c)}
   start();loadData();
 })();
