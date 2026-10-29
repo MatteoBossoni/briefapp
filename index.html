@@ -853,15 +853,39 @@ function showSetup(err){
   <p>Agenzia Brief · attrezzatura e produzioni.<br>Entra con il tuo account Google <b>@ripresefirenze.it</b> o <b>@agenziabrief.it</b>.</p>
   ${iosSafari?`<div class="note" style="margin:0 0 16px"><span class="tx"><b>Su iPhone installa prima l'app:</b> tocca <b>Condividi</b> → <b>Aggiungi alla schermata Home</b>, poi apri Magazzino dalla Home ed entra da lì.</span></div>`:''}
   ${err?`<div class="err">${esc(err)}</div>`:''}
-  <button class="btn primary" style="width:100%;margin-bottom:14px;height:52px" id="suLogin"><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#000" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>Accedi con Google</button>
+  <div id="gsiBtn" style="min-height:48px;margin-bottom:10px;display:flex;justify-content:center"></div>
+  <div id="gsiMsg" class="err" hidden></div>
+  <button class="btn" style="width:100%;margin-bottom:14px;height:46px;font-size:13px;color:var(--muted)" id="suLogin"><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#000" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>Problemi? Accedi dal browser</button>
   <details style="margin-top:8px"><summary style="color:var(--muted);font-size:14px;padding:8px 0">Hai già un link di accesso?</summary>
   ${navigator.clipboard&&navigator.clipboard.readText?'<button class="btn" style="width:100%;margin:8px 0 12px" id="suPaste">Incolla link di accesso</button>':''}
   <label class="fld"><span>Link di accesso</span><textarea id="suLink" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea></label>
   <button class="btn" style="width:100%" id="suGo">Collega</button></details></div>`;
   $('#suLogin').onclick=login;
+  gsiInit();
   const go=t=>{const c=parseAccess(t);if(!c){showSetup('Non sembra un link di accesso valido.');return}connect(c.url,c.token)};
   $('#suGo').onclick=()=>go($('#suLink').value);
   const ps=$('#suPaste');if(ps)ps.onclick=async()=>{try{const t=await navigator.clipboard.readText();$('#suLink').value=t;go(t)}catch(_){$('#suLink').focus()}};
+}
+/* pulsante ufficiale "Accedi con Google" (Google Identity Services) */
+let gsiLoading=null;
+function gsiInit(){
+  const L=window.RF_CONFIG||{};
+  if(!L.GOOGLE_CLIENT_ID||/DA_INSERIRE/.test(L.GOOGLE_CLIENT_ID)){$('#suLogin').textContent='Accedi con Google';return}
+  if(!gsiLoading)gsiLoading=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)});
+  gsiLoading.then(()=>{
+    const el=$('#gsiBtn');if(!el)return;
+    google.accounts.id.initialize({client_id:L.GOOGLE_CLIENT_ID,callback:r=>loginWithGoogle(r.credential),ux_mode:'popup',use_fedcm_for_prompt:true,cancel_on_tap_outside:true});
+    google.accounts.id.renderButton(el,{theme:'filled_black',size:'large',shape:'rectangular',text:'signin_with',locale:'it',width:Math.min(360,el.offsetWidth||320)});
+  }).catch(()=>{$('#suLogin').textContent='Accedi con Google'});
+}
+async function loginWithGoogle(credential){
+  const L=window.RF_CONFIG||{},m=$('#gsiMsg');
+  if(m){m.hidden=false;m.style.color='var(--muted)';m.textContent='Accesso in corso…'}
+  try{
+    const r=await fetch(L.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:'loginGoogle',credential})}).then(x=>x.json());
+    if(!r.ok)throw new Error(r.error);
+    connect(L.API_URL,r.result.token);
+  }catch(e){if(m){m.hidden=false;m.style.color='';m.textContent=e.message||'Accesso non riuscito'}}
 }
 async function connect(url,token){
   if(!/^https:\/\/script\.google\.com\//.test(url)||!/^[0-9a-f]{64}$/.test(token)){showSetup('Link di accesso non valido.');return}
