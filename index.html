@@ -321,6 +321,10 @@ body{font-size:15px}
 .btn.wide{width:100%;flex:none;text-decoration:none;color:var(--fg)}
 .btn.primary.wide{color:#000;height:50px}
 /* home */
+.hm-leg{display:flex;gap:14px;flex-wrap:wrap;padding:0 16px 10px;font-size:12px;color:var(--muted)}
+.hm-leg>span{display:flex;align-items:center;gap:6px}.hm-leg .kd{width:40px;font-size:13px}
+.dfi{width:44px;height:44px;flex:none;display:grid;place-items:center;color:var(--brand);background:var(--sunk)}
+.crumb{font-size:13px;color:var(--muted);padding:0 16px 10px}
 .hm-top{display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 0}
 .hm-top h2{font-family:var(--f-display);font-weight:400;font-size:34px;letter-spacing:.02em;margin:0;line-height:1;text-transform:uppercase}
 .hm-top span{color:var(--muted);font-size:13px}
@@ -400,6 +404,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const PAL=8;
 const ST={ok:'Disponibile',repair:'Da riparare',out:'Fuori uso'};
 const IC={
+  chev:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;color:var(--muted)"><path d="M9 6l6 6-6 6"/></svg>',
   sync:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-15.5 6.3L3 16M3 12a9 9 0 0115.5-6.3L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></svg>',
   down:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--muted)"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
   edit:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
@@ -580,7 +585,7 @@ function closeSheet(){if(R().sheet)history.back()}
 function show(full){
   const r=R();
   const top=TOP.includes(r.v);
-  document.body.classList.toggle('sub',!top||r.v==='home');
+  document.body.classList.toggle('sub',!top);
   $('#back').hidden=top;
   document.querySelectorAll('#tabs button').forEach(b=>b.dataset.tab===(top?TABOF(r.v):'')?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
   if(full){S.armed=null;renderHead();renderBody();requestAnimationFrame(()=>window.scrollTo(0,r.sy||0))}
@@ -960,8 +965,8 @@ function loadDocs(force){
   if(S.docsLoading)return;S.docsLoading=true;
   api('getDocs',!!force).then(d=>{S.docs=d;S.docsErr='';LS.set('rf-docs',d);
     const need=d.files.filter(f=>f.thumb&&!(f.id in S.thumbs)).map(f=>f.id);
-    if(need.length)api('getDocThumbs',need).then(t=>{need.forEach(id=>S.thumbs[id]=t[id]||'');if(R().v==='docs')renderBody()}).catch(()=>{});
-  }).catch(e=>{S.docsErr=e.message||'errore'}).finally(()=>{S.docsLoading=false;if(R().v==='docs'){renderHead();renderBody()}});
+    if(need.length)api('getDocThumbs',need).then(t=>{need.forEach(id=>S.thumbs[id]=t[id]||'');if(['docs','dfold'].includes(R().v))renderBody()}).catch(()=>{});
+  }).catch(e=>{S.docsErr=e.message||'errore'}).finally(()=>{S.docsLoading=false;if(['docs','dfold'].includes(R().v)){renderHead();renderBody()}});
 }
 const tmRefresh=()=>`<button class="ib" data-act="tmReload" aria-label="Aggiorna">${IC.sync||'↻'}</button>`;
 SCR.team={
@@ -1008,24 +1013,45 @@ SCR.person={
 /* ---------- Documenti ---------- */
 const EXT_LAB={pptx:'PPTX',docx:'DOCX',xlsx:'XLSX',pdf:'PDF',png:'PNG',jpg:'JPG',jpeg:'JPG',svg:'SVG',ai:'AI',eps:'EPS',zip:'ZIP',mp4:'MP4',mov:'MOV',psd:'PSD'};
 const fsize=b=>!b?'':b<1048576?Math.max(1,Math.round(b/1024))+' KB':(b/1048576).toFixed(b<10485760?1:0).replace('.',',')+' MB';
+/* cartelle dei documenti (come su Drive, anche vuote) */
+const dcSub=f=>S.docs?S.docs.folders.filter(x=>x.parent===f):[];
+const dcFilesIn=f=>S.docs?S.docs.files.filter(x=>x.folder===f):[];
+const dcFolder=f=>S.docs&&S.docs.folders.find(x=>x.id===f);
+function dcCount(f){return dcFilesIn(f).length+dcSub(f).reduce((s,x)=>s+dcCount(x.id),0)}
+function dcPath(f){const p=[];let x=dcFolder(f);while(x){p.unshift(x);x=dcFolder(x.parent)}return p}
+const dcPathName=f=>dcPath(f).map(x=>x.name).join(' › ');
+
+const FOLDER_SVG='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 6a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>';
+function docsBody(fid){
+  if(!S.docs||!S.docs.folders){if(!S.docsLoading&&!S.docsErr)setTimeout(()=>loadDocs(!!S.docs),0);
+    return S.docsErr?(/creaCartellaDocumenti/.test(S.docsErr)?'<div class="empty"><b>Cartella non ancora creata</b>Chi gestisce l\'app deve eseguire una volta <i>autorizza</i> in Apps Script.</div>':`<div class="empty"><b>Documenti non raggiungibili</b>${esc(S.docsErr)}</div>`):'<div class="empty"><b>Carico i documenti…</b></div>'}
+  if(!S.docsFresh){S.docsFresh=1;setTimeout(()=>loadDocs(false),0)}
+  const d=S.docs,q=S.dcQ.trim().toLowerCase(),cur=fid||d.root;
+  const frow=x=>{const n=dcCount(x.id),sub=dcSub(x.id).length;return `<button class="it" data-go="dfold" data-id="${x.id}"><span class="dfi">${FOLDER_SVG}</span><span class="mid"><span class="t">${hl(x.name,q)}</span><span class="s">${n?n+' file':'vuota'}${sub?' · '+sub+' cartell'+(sub>1?'e':'a'):''}${q?' · '+esc(dcPathName(x.parent)||'Documenti'):''}</span></span>${IC.chev||''}</button>`};
+  const row=x=>{const lab=EXT_LAB[x.ext]||(x.ext||'FILE').toUpperCase(),th=S.thumbs[x.id];
+    return `<button class="it" data-act="doc" data-id="${x.id}"><span class="dth">${th?`<img src="${th}" alt="">`:`<span>${esc(lab)}</span>`}</span><span class="mid"><span class="t">${hl(x.name,q)}</span><span class="s">${esc(lab)}${x.size?' · '+fsize(x.size):''} · ${esc(fmtSh.format(new Date(x.upd)))}${q?' · '+esc(dcPathName(x.folder)||'Documenti'):''}</span></span>${IC.down||''}</button>`};
+  let fl,fi;
+  if(q){fl=d.folders.filter(x=>x.name.toLowerCase().includes(q));fi=d.files.filter(x=>x.name.toLowerCase().includes(q))}
+  else{fl=dcSub(cur);fi=dcFilesIn(cur)}
+  let h='';
+  if(fl.length)h+=`<div class="sec">Cartelle</div><div class="list">${fl.map(frow).join('')}</div>`;
+  if(fi.length)h+=`<div class="sec">File</div><div class="list">${fi.map(row).join('')}</div>`;
+  if(!h)h=q?'<div class="empty"><b>Nessun risultato</b></div>':'<div class="empty"><b>Cartella vuota</b>Carica i file in questa cartella su Drive: compaiono qui da soli. Anche le sottocartelle nuove.</div>';
+  const fo=dcFolder(cur);
+  return h+`<div style="padding:16px"><a class="btn wide" href="${esc(fo?fo.url:d.folder)}" target="_blank" rel="noopener">Apri questa cartella in Drive</a></div>`;
+}
+const docsHead=()=>`<label class="search">${IC.search}<input type="search" id="dcQ" placeholder="Cerca documento o cartella" value="${esc(S.dcQ)}" autocomplete="off"></label>`;
 SCR.docs={
   title:()=>'Documenti',
-  acts:()=>`<button class="ib" data-act="dcReload" aria-label="Aggiorna">${IC.sync||'↻'}</button>`,
-  head:()=>{const d=S.docs;const cats=d?d.cats.filter(c=>d.files.some(x=>x.cat===c)):[];
-    return `<label class="search">${IC.search}<input type="search" id="dcQ" placeholder="Cerca documento" value="${esc(S.dcQ)}" autocomplete="off"></label>
-    ${cats.length?`<div class="chips"><button class="chip" data-act="dcCat" data-c="" aria-pressed="${!S.dcCat}">Tutti</button>${cats.map(c=>`<button class="chip" data-act="dcCat" data-c="${esc(c)}" aria-pressed="${S.dcCat===c}">${esc(c)}</button>`).join('')}</div>`:''}`},
-  body(){
-    if(!S.docs){if(!S.docsLoading&&!S.docsErr)setTimeout(()=>loadDocs(false),0);
-      return S.docsErr?(/creaCartellaDocumenti/.test(S.docsErr)?'<div class="empty"><b>Cartella non ancora creata</b>Chi gestisce l\'app deve eseguire una volta <i>creaCartellaDocumenti</i> in Apps Script.</div>':`<div class="empty"><b>Documenti non raggiungibili</b>${esc(S.docsErr)}</div>`):'<div class="empty"><b>Carico i documenti…</b></div>'}
-    if(!S.docsFresh){S.docsFresh=1;setTimeout(()=>loadDocs(false),0)}
-    const d=S.docs,q=S.dcQ.trim().toLowerCase();
-    if(!d.files.length)return '<div class="empty"><b>Ancora nessun documento</b>Metti i file nella cartella Drive «BriefApp – Documenti»: compaiono qui da soli.</div>';
-    const list=d.files.filter(x=>(!S.dcCat||x.cat===S.dcCat)&&(!q||x.name.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q)));
-    if(!list.length)return '<div class="empty"><b>Nessun risultato</b></div>';
-    const cats=S.dcCat||q?[[S.dcCat||'Risultati',list]]:d.cats.map(c=>[c,list.filter(x=>x.cat===c)]).filter(c=>c[1].length);
-    return cats.map(([c,l])=>`<div class="sec">${esc(c)}</div><div class="list">`+l.map(x=>{const lab=EXT_LAB[x.ext]||(x.ext||'FILE').toUpperCase(),th=S.thumbs[x.id];
-      return `<button class="it" data-act="doc" data-id="${x.id}"><span class="dth">${th?`<img src="${th}" alt="">`:`<span>${esc(lab)}</span>`}</span><span class="mid"><span class="t">${hl(x.name,q)}</span><span class="s">${esc(lab)}${x.size?' · '+fsize(x.size):''} · ${esc(fmtSh.format(new Date(x.upd)))}</span></span>${IC.down||''}</button>`}).join('')+'</div>').join('')+'<div style="height:24px"></div>';
-  }
+  acts:()=>`<button class="ib" data-act="dcReload" aria-label="Aggiorna">${IC.sync}</button>`,
+  head:docsHead,
+  body:()=>docsBody('')
+};
+SCR.dfold={
+  title:r=>{const f=dcFolder(r.id);return esc(f?f.name:'Cartella')},
+  acts:()=>`<button class="ib" data-act="dcReload" aria-label="Aggiorna">${IC.sync}</button>`,
+  head:r=>{const p=dcPath(r.id);return p.length>1?`<div class="crumb">Documenti › ${p.slice(0,-1).map(x=>esc(x.name)).join(' › ')}</div>`:''},
+  body:r=>docsBody(r.id)
 };
 SHEETS.doc=sh=>{
   const x=S.docs&&S.docs.files.find(f=>f.id===sh.id);if(!x)return '<div class="empty">File non trovato</div>';
@@ -1044,7 +1070,6 @@ Object.assign(ACT,{
   tmReload:()=>{snack('Rileggo il foglio Flussi…');loadTeam(true)},
   dcReload:()=>{snack('Aggiorno i documenti…');S.thumbs={};loadDocs(true)},
   tmMe:b=>{const p=teamPeople().find(x=>x.name===b.dataset.id);S.meName=p&&p.me&&S.meName?'':b.dataset.id.toUpperCase();LS.set('rf-mename',S.meName);renderHead();renderBody()},
-  dcCat:b=>{S.dcCat=b.dataset.c;renderHead();renderBody()},
   doc:b=>openSheet({t:'doc',id:b.dataset.id}),
   dl:async b=>{
     if(b.disabled)return;const old=b.textContent;b.disabled=true;b.textContent='Preparo il file…';
@@ -1069,7 +1094,7 @@ function loadHome(force){
   if(S.homeLoading)return;S.homeLoading=true;
   if(!S.team&&!S.teamLoading)loadTeam(false);
   Promise.all([api('getMyCal',!!force).catch(e=>({ok:false,events:[],why:e.message||'errore'})),api('getTodos').catch(()=>S.todos||[])])
-   .then(([c,t])=>{S.cal=c;S.todos=t;homeSaved()}).finally(()=>{S.homeLoading=false;homeRefresh()});
+   .then(([c,t])=>{S.cal=c&&typeof c==='object'?c:{ok:false,events:[]};S.todos=Array.isArray(t)?t:[];homeSaved()}).finally(()=>{S.homeLoading=false;homeRefresh()});
 }
 /* eventi del giorno d: Calendar + lavori del foglio Flussi (uniti se parlano della stessa cosa) */
 function dayEvents(d,filter){
@@ -1141,7 +1166,7 @@ const LAB={set:'SET',post:'POST',altro:'ALTRO',cal:'CAL'};
 
 /* ---------- Home (telefono) ---------- */
 S.tmF='all';S.attSeg=LS.get('rf-att')||'mag';S.inv={q:'',cat:''};
-{const h=LS.get('rf-home');if(h){S.cal=h.cal;S.todos=h.todos}}
+{const h=LS.get('rf-home');if(h&&Array.isArray(h.todos)){S.cal=h.cal;S.todos=h.todos}}
 function homeRefresh(){if(['home','todos','person'].includes(R().v))renderBody()}
 function homeUndo(r){snack('Fatto: '+r.text.split(' · ')[0],'Annulla',()=>todoUndoAuto(r.id))}
 const fmtLongP=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'numeric',month:'short'});
@@ -1160,15 +1185,15 @@ SCR.home={
     if(!S.homeFresh){S.homeFresh=1;setTimeout(()=>loadHome(false),0)}
     if(!S.team&&!S.teamLoading&&!S.teamErr)setTimeout(()=>loadTeam(false),0);
     const nm=myName();
-    let h=`<div class="hm-top"><h2>Ciao${nm?' '+esc(nm):''}</h2><span>${esc(fmtLongP.format(parse(TODAY)))}</span></div>
-      <div class="hm-big">${BIGB.map(([k,t,svg])=>`<button data-act="bigGo" data-v="${k}"><span class="bi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svg}</svg></span><b>${t}</b><small>${bigSub(k)}</small></button>`).join('')}</div>`;
+    let h=`<div class="hm-top"><h2>Ciao${nm?' '+esc(nm):''}</h2><span>${esc(fmtLongP.format(parse(TODAY)))}</span></div>`;
     const td=todoList().filter(x=>!x.done);
     h+=`<div class="hm-todo"><div class="hd"><b>Da fare · ${td.length}</b><button data-go="todos">Vedi tutti →</button></div>${td.slice(0,3).map(x=>`<div class="r"><button class="cb" data-act="todo" data-id="${esc(x.id)}" aria-label="Fatto"></button><span ${x.prod?`data-go="prod" data-id="${x.prod}"`:''}>${esc(x.t)}${x.s?` <small>· ${esc(x.s.split(' · ')[0])}</small>`:''}</span></div>`).join('')||'<div class="r"><span>Niente da fare. 👌</span></div>'}</div>`;
     let days='',n=0;
     for(let i=0;i<14&&n<5;i++){const d=addD(TODAY,i),ev=dayEvents(d);if(!ev.length&&i>1)continue;n++;
       const lab=i===0?'Oggi':i===1?'Domani':cap(fmtWDP.format(parse(d)).split(' ')[0]);
       days+=`<div class="hm-day"><div class="dl"><b class="${i===0?'y':''}">${esc(lab)}</b><small>${esc(fmtWDP.format(parse(d)))}</small></div><div class="evs">${ev.map(evLine).join('')||'<span class="mu">Niente in programma</span>'}</div></div>`}
-    h+=`<div class="sec" style="display:flex;justify-content:space-between;align-items:baseline">La tua settimana<button class="lnk" data-act="myProfile">tutta →</button></div><div class="list">${days}</div>`;
+    h+=`<div class="sec" style="display:flex;justify-content:space-between;align-items:baseline">La tua settimana<button class="lnk" data-act="myProfile">tutta →</button></div>
+      <div class="hm-leg"><span><span class="kd k-cal">CAL</span>il tuo Calendar</span><span><span class="kd k-set">SET</span>produzioni</span><span><span class="kd k-post">POST</span>lavorazioni</span></div><div class="list">${days}</div>`;
     if(S.cal&&!S.cal.ok)h+=`<p class="tm-src">${esc(S.cal.why||'Calendario non collegato')} Vedi solo i lavori del foglio Flussi.</p>`;
     return h+'<div style="height:20px"></div>';
   }
