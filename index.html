@@ -202,6 +202,13 @@ body.sub .snack{bottom:calc(var(--sab) + 84px)}
 .setup .logo{font-family:var(--f-display);font-weight:700;font-size:40px;text-transform:uppercase;background:var(--fg);color:var(--bg);display:inline-block;padding:0 12px;transform:rotate(-2deg);margin-bottom:20px}
 .setup p{color:var(--muted)}
 .err{color:var(--bad);font-size:14px;margin:-4px 0 12px}
+.qa{display:inline-block;background:var(--brand,#FFD632);color:#000;font-family:var(--f-display);font-size:17px;font-weight:400;letter-spacing:.04em;line-height:1.1;padding:1px 7px 0;margin-left:6px;transform:skewX(-12deg);vertical-align:1px;white-space:nowrap}
+.qa.dim{background:transparent;color:var(--brand,#FFD632);box-shadow:inset 0 0 0 1px var(--brand,#FFD632)}
+.qstep{display:flex;align-items:center;justify-content:center;gap:18px;margin:16px 0 6px}
+.qstep b{font-family:var(--f-display);font-size:56px;min-width:70px;text-align:center;line-height:1}
+.qstep span{color:var(--muted)}
+.ib.big{width:56px;height:56px;border:1px solid var(--line);font-size:28px;color:var(--fg)}
+.stepper{display:flex;align-items:center;gap:6px}.stepper b{min-width:26px;text-align:center;font-size:17px}.stepper .ib{border:1px solid var(--line);width:38px;height:38px;color:var(--fg)}
 .app{color:var(--brand);font-weight:inherit}
 
 /* ===== Agenzia Brief theme ===== */
@@ -279,6 +286,40 @@ body{font-size:15px}
 .setup .logo{display:flex;align-items:center;gap:14px;background:transparent;color:var(--fg);transform:none;padding:0;font-weight:400;font-size:52px;letter-spacing:.03em}
 .setup .logo .mono-b{width:26px;height:50px;fill:var(--brand)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .setup .logo .mono-b{fill:var(--brand)}}
+/* team */
+.tabs button .pill{width:52px}
+.tabs button{font-size:13.5px;letter-spacing:.04em}
+.av{width:38px;height:38px;flex:none;display:grid;place-items:center;background:var(--sunk);font-family:var(--f-display);font-size:19px;letter-spacing:.03em}
+.av.me{background:var(--brand);color:#000}
+.av.big{width:56px;height:56px;font-size:30px;background:var(--brand);color:#000;transform:skewX(-8deg)}
+.cnt{font-family:var(--f-display);font-size:20px;color:var(--muted);flex:none}
+.mid mark,.t mark,.s mark{background:color-mix(in srgb,var(--brand) 45%,transparent);color:inherit;padding:0 1px}
+.tm-src{color:var(--muted);font-size:13px;padding:14px 16px 28px;margin:0;line-height:1.45}
+.tm-hero{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:12px}
+.tm-hero h2{margin:0}
+.tm-hero .stats{flex-basis:100%;margin-top:2px}
+.tm-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;padding:0 12px}
+.tm-strip div{min-height:44px;background:var(--surface);border:1px solid var(--line);padding:3px 4px;display:flex;flex-direction:column;gap:3px;font-size:10.5px;color:var(--muted)}
+.tm-strip div b{font-weight:600;color:var(--fg);font-size:11px;white-space:nowrap;overflow:hidden}
+.tm-strip div.we{opacity:.55}.tm-strip div.td{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.tm-strip i,.tm-leg i{display:block;height:5px}
+.tm-leg{display:flex;gap:14px;padding:8px 16px 0;font-size:12px;color:var(--muted)}
+.tm-leg span{display:flex;align-items:center;gap:6px}.tm-leg i{width:14px}
+.k-set{background:var(--brand)}.k-post{background:#7d95ff}.k-altro{background:#8a8a86}
+.tm-row{display:flex;align-items:center;gap:14px;min-height:58px;padding:8px 16px;border-bottom:1px solid var(--line)}
+.list .tm-row:last-child{border-bottom:0}
+.tm-row.past{opacity:.6}
+.kd{flex:none;width:52px;text-align:center;font-family:var(--f-display);font-size:15px;letter-spacing:.06em;padding:2px 0 0;color:#000;transform:skewX(-12deg)}
+.kd.k-altro{color:#fff}
+.s.now{color:var(--brand);font-weight:600}
+.ib.txt{width:auto;border-radius:0;padding:0 12px;font-family:var(--f-display);font-size:19px;letter-spacing:.05em}
+/* documenti */
+.dth{width:58px;height:44px;flex:none;background:var(--sunk);display:grid;place-items:center;overflow:hidden}
+.dth img{width:100%;height:100%;object-fit:cover}
+.dth span{font-family:var(--f-display);font-size:15px;letter-spacing:.05em;background:var(--brand);color:#000;padding:1px 6px 0;transform:skewX(-12deg)}
+.sheet .dbig{width:100%;max-height:200px;object-fit:contain;background:var(--sunk);margin-bottom:12px}
+.btn.wide{width:100%;flex:none;text-decoration:none;color:var(--fg)}
+.btn.primary.wide{color:#000;height:50px}
 </style>
 </head>
 <body>
@@ -298,6 +339,8 @@ body{font-size:15px}
     <button data-tab="prods"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>Produzioni</button>
     <button data-tab="mag"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>Magazzino</button>
     <button data-tab="kits"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></span>Kit</button>
+    <button data-tab="team"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/></svg></span>Team</button>
+    <button data-tab="docs"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg></span>Documenti</button>
   </nav>
 </div>
 <div id="setup" hidden></div>
@@ -313,6 +356,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const PAL=8;
 const ST={ok:'Disponibile',repair:'Da riparare',out:'Fuori uso'};
 const IC={
+  sync:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-15.5 6.3L3 16M3 12a9 9 0 0115.5-6.3L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></svg>',
+  down:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--muted)"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
   edit:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
   gear:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>',
   plus:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
@@ -355,26 +400,39 @@ function usersOf(itemId,span,exceptId){
   const r=[];for(const p of S.prods.values()){if(p.id!==exceptId&&overlap(p,span)&&(p.items||[]).includes(itemId)) r.push(p)}
   return r.sort((a,b)=>a.start.localeCompare(b.start));
 }
-function clashes(p){let n=0;for(const id of p.items||[]){if(S.items.has(id)&&usersOf(id,p,p.id).length) n++}return n}
+/* quantità: p.items = id unici, p.q = {id: unità} quando sono più di una */
+const qty=id=>Math.max(1,+(S.items.get(id)?.qty)||1);
+const qn=(p,id)=>(p.items||[]).includes(id)?Math.max(1,+(p.q?.[id])||1):0;
+const usedBy=(id,span,except)=>usersOf(id,span,except).reduce((s,u)=>s+qn(u,id),0);
+const freeOf=(id,p)=>qty(id)-usedBy(id,p,p.id);
+const inClash=(p,id)=>S.items.has(id)&&qn(p,id)>freeOf(id,p);
+const units=p=>(p.items||[]).filter(i=>S.items.has(i)).reduce((s,i)=>s+qn(p,i),0);
+const cntOf=p=>new Map((p.items||[]).map(id=>[id,qn(p,id)]));
+function setCnt(p,cnt){p.items=[];p.q={};for(const [id,n] of cnt){if(n>0){p.items.push(id);if(n>1)p.q[id]=n}}}
+const pack=p=>(p.items||[]).map(id=>{const n=qn(p,id);return n>1?id+':'+n:id});
+function unpack(x){const items=[],q={...(x.q||{})};for(const e of x.items||[]){const [id,n]=String(e).split(':');if(!id)continue;const k=Math.max(1,parseInt(n)||1);if(items.includes(id))q[id]=(q[id]||1)+k;else{items.push(id);if(n)q[id]=k}}for(const id in q)if(!items.includes(id)||q[id]<=1)delete q[id];return{...x,items,q}}
+const summarize=ids=>{const m=new Map();ids.forEach(i=>m.set(i,(m.get(i)||0)+1));return [...m].map(([i,n])=>iname(i)+(n>1?' ×'+n:''))};
+function clashes(p){let n=0;for(const id of p.items||[]){if(inClash(p,id)) n++}return n}
 const iname=id=>S.items.get(id)?.name||'pezzo eliminato';
 const base=n=>String(n).replace(/\s*\(\d+\)$/,'');
-const isFreeFor=(id,p,set)=>{const it=S.items.get(id);return !!it&&it.status==='ok'&&!set.has(id)&&!usersOf(id,p,p.id).length};
+
 const hasRule=id=>[...S.rules.values()].some(r=>(r.cams||[]).includes(id));
 
 /* ---------- automatic accessories & kits (same logic as the desktop app) ---------- */
-function fillAccessories(p,set){
-  const alloc=new Set(),added=[],missing=[],sharedDone=new Set();
-  for(const cam of itemsSorted().filter(it=>set.has(it.id))){
+function fillAccessories(p,cnt){
+  const alloc=new Map(),added=[],missing=[],sharedDone=new Set();
+  for(const cam of itemsSorted().filter(it=>cnt.get(it.id)>0)){
     for(const r of rulesSorted()){
       if(!(r.cams||[]).includes(cam.id))continue;
       (r.groups||[]).forEach((g,gi)=>{
         if(g.shared){const key=r.id+':'+gi;if(sharedDone.has(key))return;sharedDone.add(key)}
         const cands=(g.cands||[]).filter(c=>S.items.has(c));
-        for(let k=0;k<(g.n||1);k++){
-          let pick=cands.find(c=>set.has(c)&&!alloc.has(c));
-          if(!pick){pick=cands.find(c=>isFreeFor(c,p,set));if(pick){set.add(pick);added.push(pick)}}
-          if(pick)alloc.add(pick);else{missing.push(`${g.label||'accessorio'} per ${cam.name}`);break}
-        }
+        let need=g.n||1;
+        for(const c of cands){if(need<=0)break;const have=(cnt.get(c)||0)-(alloc.get(c)||0);if(have>0){const t=Math.min(have,need);alloc.set(c,(alloc.get(c)||0)+t);need-=t}}
+        for(const c of cands){if(need<=0)break;if(S.items.get(c).status!=='ok')continue;
+          const left=freeOf(c,p)-(cnt.get(c)||0);if(left<=0)continue;const t=Math.min(left,need);
+          cnt.set(c,(cnt.get(c)||0)+t);alloc.set(c,(alloc.get(c)||0)+t);for(let k=0;k<t;k++)added.push(c);need-=t}
+        if(need>0)missing.push(`${g.label||'accessorio'} per ${cam.name}`);
       });
     }
   }
@@ -382,35 +440,40 @@ function fillAccessories(p,set){
 }
 function applyKit(p,kid){
   const k=S.kits.get(kid);if(!p||!k)return;
-  const set=new Set(p.items||[]),added=[],swapped=[],clash=[];
+  const cnt=cntOf(p),added=[],clash=[];
   const ruleCands=new Set();for(const r of S.rules.values())for(const g of r.groups||[])for(const c of g.cands||[])ruleCands.add(c);
   for(const id of k.items||[]){
-    if(!S.items.has(id)||set.has(id))continue;
-    if(isFreeFor(id,p,set)){set.add(id);added.push(id);continue}
-    const it=S.items.get(id);
-    const alt=itemsSorted().find(x=>x.id!==id&&base(x.name)===base(it.name)&&isFreeFor(x.id,p,set));
-    if(alt){set.add(alt.id);added.push(alt.id);swapped.push(`${it.name} → ${alt.name}`);continue}
+    const it=S.items.get(id);if(!it)continue;
+    const have=cnt.get(id)||0;let want=qn(k,id)-have;if(want<=0)continue;
+    const left=it.status==='ok'?Math.max(0,freeOf(id,p)-have):0,t=Math.min(left,want);
+    if(t){cnt.set(id,have+t);for(let i=0;i<t;i++)added.push(id);want-=t}
+    if(want<=0)continue;
     if(S.autoOn&&ruleCands.has(id))continue;
-    set.add(id);added.push(id);clash.push(it.name);
+    cnt.set(id,(cnt.get(id)||0)+want);for(let i=0;i<want;i++)added.push(id);clash.push(it.name+(want>1?' ×'+want:''));
   }
-  const fill=S.autoOn?fillAccessories(p,set):{added:[],missing:[]};
-  commitAuto(p,set,[...added,...fill.added],{title:`Kit “${k.name}”`,swapped,clash,missing:fill.missing});
+  const fill=S.autoOn?fillAccessories(p,cnt):{added:[],missing:[]};
+  commitAuto(p,cnt,[...added,...fill.added],{title:`Kit “${k.name}”`,clash,missing:fill.missing});
 }
-function commitAuto(p,set,ids,info){
-  p.items=[...set];
+function commitAuto(p,cnt,ids,info){
+  setCnt(p,cnt);
   S.lastAuto=(ids.length||info.missing?.length||info.clash?.length)?{pid:p.id,ids,...info}:null;
   saveItems(p);refresh();
 }
-function saveItems(p){const latest=[...p.items];write('prods/'+p.id,'update',{items:latest})}
-function toggleProdItem(p,iid){
-  const set=new Set(p.items||[]);const adding=!set.has(iid);adding?set.add(iid):set.delete(iid);
+function saveItems(p){const latest=pack(p);write('prods/'+p.id,'update',{items:latest})}
+function setProdQty(p,iid,n){
+  const cnt=cntOf(p),adding=!cnt.get(iid)&&n>0;cnt.set(iid,n);
   if(adding&&S.autoOn&&hasRule(iid)){
-    const f=fillAccessories(p,set);p.items=[...set];saveItems(p);refresh();
-    if(f.added.length) snack(`+ ${f.added.map(iname).join(', ')}`,'Annulla',()=>{p.items=p.items.filter(x=>!f.added.includes(x));saveItems(p);refresh()});
+    const f=fillAccessories(p,cnt);setCnt(p,cnt);saveItems(p);refresh();
+    if(f.added.length) snack(`+ ${summarize(f.added).join(', ')}`,'Annulla',()=>{const c=cntOf(p);f.added.forEach(i=>c.set(i,(c.get(i)||0)-1));setCnt(p,c);saveItems(p);refresh()});
     else if(f.missing.length) snack('Niente di libero per: '+f.missing.join('; '));
     return;
   }
-  p.items=[...set];saveItems(p);refresh();
+  setCnt(p,cnt);saveItems(p);refresh();
+}
+function setKitQty(k,iid,n){const c=cntOf(k);c.set(iid,n);setCnt(k,c);write('kits/'+k.id,'update',{items:pack(k)});refresh()}
+function toggleProdItem(p,iid){
+  if(qty(iid)>1){openSheet({t:'qty',mode:'prod',oid:p.id,id:iid});return}
+  setProdQty(p,iid,qn(p,iid)?0:1);
 }
 
 /* ---------- backend ---------- */
@@ -437,8 +500,8 @@ function write(path,op,data){
 }
 function ingest(d){
   S.items=new Map(d.items.map(x=>[x.id,x]));
-  S.prods=new Map(d.prods.map(x=>[x.id,{...x,items:[...(x.items||[])]}]));
-  S.kits=new Map(d.kits.map(x=>[x.id,{...x,items:[...(x.items||[])]}]));
+  S.prods=new Map(d.prods.map(x=>[x.id,unpack(x)]));
+  S.kits=new Map(d.kits.map(x=>[x.id,unpack(x)]));
   S.rules=new Map(d.rules.map(x=>[x.id,{...x,cams:[...(x.cams||[])],groups:(x.groups||[]).map(g=>({...g,cands:[...(g.cands||[])]}))}]));
   S.loaded=true;
 }
@@ -458,7 +521,7 @@ const rid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 /* ---------- navigation (Android back closes sheets and screens) ---------- */
 const R=()=>history.state||{v:'prods'};
-const TOP=['prods','mag','kits'];
+const TOP=['prods','mag','kits','team','docs'];
 function go(route,replace){
   const cur=R();const sy=window.scrollY;
   history.replaceState({...cur,sy},'');
@@ -513,7 +576,7 @@ SCR.prods={
     for(const p of ps){
       const m=fmtM.format(parse(p.start));
       if(m!==lastM){if(lastM)h+='</div>';h+=`<div class="sec">${esc(m)}</div><div class="plist">`;lastM=m}
-      const c=clashes(p),n=(p.items||[]).filter(i=>S.items.has(i)).length,live=p.start<=TODAY&&p.end>=TODAY;
+      const c=clashes(p),n=units(p),live=p.start<=TODAY&&p.end>=TODAY;
       const d=parse(p.start);
       h+=`<button class="pc" style="--pc:${pc(p)}" data-go="prod" data-id="${p.id}">
         <span class="dt"><b>${d.getDate()}</b><small>${esc(fmtMon.format(d).replace('.',''))}</small></span>
@@ -533,15 +596,15 @@ SCR.prod={
     const p=S.prods.get(r.id);
     if(!p)return '<div class="empty"><b>Produzione non trovata</b>Forse è stata eliminata.</div>';
     const ids=(p.items||[]).filter(i=>S.items.has(i));
-    const nC=clashes(p);
+    const nC=clashes(p),nU=units(p);
     let h=`<div class="hero" style="--pc:${pc(p)}"><h2>${esc(p.name)}</h2><div class="when">${esc(range(p))}${days(p)>1?` · ${days(p)} giorni`:''}</div>
       ${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}
-      <div class="stats"><span class="stat"><b>${ids.length}</b> pezzi</span>${nC?`<span class="stat bad"><b>${nC}</b> in conflitto</span>`:'<span class="stat">Nessun conflitto</span>'}</div></div>
+      <div class="stats"><span class="stat"><b>${nU}</b> pezzi</span>${nC?`<span class="stat bad"><b>${nC}</b> in conflitto</span>`:'<span class="stat">Nessun conflitto</span>'}</div></div>
       <div class="acts"><button class="btn" data-act="kitApply">${IC.kit}Applica kit</button><button class="btn" data-act="fill">${IC.bolt}Completa accessori</button></div>`;
     const a=S.lastAuto;
     if(a&&a.pid===p.id){
-      let t=`<b>${esc(a.title)}:</b> `+(a.ids.length?`aggiunti ${a.ids.length} pezzi`:'niente da aggiungere');
-      if(a.swapped?.length)t+=`<span class="miss" style="color:var(--fg)">Sostituiti perché occupati: ${a.swapped.map(esc).join('; ')}</span>`;
+      const sm=summarize(a.ids);
+      let t=`<b>${esc(a.title)}:</b> `+(a.ids.length?`aggiunti ${a.ids.length} pezzi`+(sm.length<=5?` (${sm.map(esc).join(', ')})`:''):'niente da aggiungere');
       if(a.clash?.length)t+=`<span class="miss">In conflitto: ${a.clash.map(esc).join(', ')}</span>`;
       if(a.missing?.length)t+=`<span class="miss">Niente di libero per: ${a.missing.map(esc).join('; ')}</span>`;
       h+=`<div class="note"><span class="tx">${t}</span>${a.ids.length?'<button data-act="undoAuto">Annulla</button>':''}<button data-act="closeAuto" aria-label="Chiudi">✕</button></div>`;
@@ -551,11 +614,11 @@ SCR.prod={
     for(const it of itemsSorted()){
       if(!set.has(it.id))continue;
       if(it.cat!==lastC){if(lastC!==null)h+='</div>';h+=`<div class="cat"><span>${esc(it.cat)}</span></div><div class="list">`;lastC=it.cat}
-      const us=usersOf(it.id,p,p.id);
-      let sub=us.map(u=>`<span class="bad">Conflitto: ${esc(u.name)} · ${esc(fmtS.format(parse(u.start)))}</span>`).join(' ');
+      const us=inClash(p,it.id)?usersOf(it.id,p,p.id):[],n=qn(p,it.id),Q=qty(it.id);
+      let sub=us.map(u=>`<span class="bad">Conflitto: ${esc(u.name)}${qn(u,it.id)>1?' ×'+qn(u,it.id):''} · ${esc(fmtS.format(parse(u.start)))}</span>`).join(' ');
       if(it.status!=='ok')sub+=` <span class="warn">${ST[it.status]}</span>`;
       if(!sub&&it.note)sub=esc(it.note);
-      h+=`<div class="it"><span class="mid" data-act="item" data-id="${it.id}"><span class="t">${esc(it.name)}</span>${sub?`<span class="s">${sub}</span>`:''}</span><button class="rm" data-act="rmItem" data-id="${it.id}" aria-label="Togli ${esc(it.name)}">${IC.x}</button></div>`;
+      h+=`<div class="it"><span class="mid" data-act="${Q>1?'qtyP':'item'}" data-id="${it.id}"><span class="t">${esc(it.name)}${Q>1?`<span class="qa">×${n}</span>`:''}</span>${sub?`<span class="s">${sub}</span>`:''}</span><button class="rm" data-act="rmItem" data-id="${it.id}" aria-label="Togli ${esc(it.name)}">${IC.x}</button></div>`;
     }
     return h+'</div>';
   }
@@ -576,27 +639,29 @@ SCR.pick={
     const isP=r.mode==='prod',o=isP?S.prods.get(r.id):S.kits.get(r.id);
     if(!o)return '<div class="empty"><b>Non trovato</b></div>';
     const on=new Set(o.items||[]),k=S.pk,q=k.q.trim().toLowerCase();
-    let h='',lastC=null,hid=0,n=0;
+    let h='',lastC=null,hid=0,nn=0;
     for(const it of itemsSorted()){
       const sel=on.has(it.id);
       if(k.cat&&it.cat!==k.cat)continue;
       if(q&&!(it.name+' '+(it.note||'')+' '+it.cat).toLowerCase().includes(q))continue;
       if(k.on&&!sel)continue;
-      const us=isP?usersOf(it.id,o,o.id):[];
-      if(isP&&k.free&&!sel&&(us.length||it.status!=='ok'))continue;
+      const us=isP?usersOf(it.id,o,o.id):[],Q=qty(it.id),fr=isP?Math.max(0,freeOf(it.id,o)):Q,n=qn(o,it.id),clash=isP&&sel&&n>freeOf(it.id,o);
+      if(isP&&k.free&&!sel&&(fr<=0||it.status!=='ok'))continue;
       if(it.extra&&!sel&&!S.showExtra&&!q){hid++;continue}
       if(it.cat!==lastC){if(lastC!==null)h+='</div>';h+=`<div class="cat"><span>${esc(it.cat)}</span></div><div class="list">`;lastC=it.cat}
       let sub='';
       if(it.status!=='ok')sub=`<span class="warn">${ST[it.status]}</span>`;
-      else if(us.length)sub=us.map(u=>`<span class="${sel?'bad':'warn'}">${sel?'Conflitto: ':'In '}${esc(u.name)} · ${esc(fmtS.format(parse(u.start)))}</span>`).join(' ');
+      else if(isP&&Q>1)sub=`<span class="${fr?'ok':'warn'}">${fr} liberi su ${Q}</span>`+(us.length?' · '+us.map(u=>`<span class="${clash?'bad':'warn'}">${esc(u.name)}${qn(u,it.id)>1?' ×'+qn(u,it.id):''}</span>`).join(', '):'');
+      else if(us.length)sub=us.map(u=>`<span class="${clash?'bad':'warn'}">${clash?'Conflitto: ':'In '}${esc(u.name)} · ${esc(fmtS.format(parse(u.start)))}</span>`).join(' ');
       else if(isP)sub='<span class="ok">Libero</span>';
+      else if(Q>1)sub=`${Q} in magazzino`;
       if(it.extra)sub+=' · extra';
-      const off=isP&&!sel&&(us.length||it.status!=='ok');
-      h+=`<button class="it ${sel?'on':''} ${off?'off':''}" data-act="tog" data-id="${it.id}" aria-pressed="${sel}"><span class="cb"></span><span class="mid"><span class="t">${esc(it.name)}</span>${sub?`<span class="s">${sub}</span>`:''}</span></button>`;n++;
+      const off=isP&&!sel&&(fr<=0||it.status!=='ok');
+      h+=`<button class="it ${sel?'on':''} ${off?'off':''}" data-act="tog" data-id="${it.id}" aria-pressed="${sel}"><span class="cb"></span><span class="mid"><span class="t">${esc(it.name)}${Q>1?`<span class="qa ${sel?'':'dim'}">×${sel?n:Q}</span>`:''}</span>${sub?`<span class="s">${sub}</span>`:''}</span></button>`;nn++;
     }
     if(lastC!==null)h+='</div>';
     if(hid)h+=`<div class="empty" style="padding:20px">${hid} pezzi extra o vecchi nascosti · <button class="chip" style="display:inline-flex" data-act="extra">Mostrali</button></div>`;
-    return n?h:`<div class="empty"><b>Nessun pezzo</b>Cambia ricerca o filtri.</div>`+h;
+    return nn?h:`<div class="empty"><b>Nessun pezzo</b>Cambia ricerca o filtri.</div>`+h;
   }
 };
 
@@ -615,16 +680,17 @@ SCR.mag={
       if(m.cat&&it.cat!==m.cat)continue;
       if(q&&!(it.name+' '+(it.note||'')+' '+it.cat).toLowerCase().includes(q))continue;
       if(it.extra&&!S.showExtra&&!q){hid++;continue}
-      const us=usersOf(it.id,span,null),free=!us.length&&it.status==='ok';
+      const us=usersOf(it.id,span,null),Q=qty(it.id),fr=Math.max(0,Q-us.reduce((s2,u)=>s2+qn(u,it.id),0)),free=fr>0&&it.status==='ok';
       nAll++;if(free)nFree++;
       if(m.free&&!free)continue;
       if(it.cat!==lastC){if(lastC!==null)h+='</div>';h+=`<div class="cat"><span>${esc(it.cat)}</span></div><div class="list">`;lastC=it.cat}
       let sub,dot='';
       if(it.status!=='ok'){sub=`<span class="warn">${ST[it.status]}</span>`;dot=it.status}
+      else if(Q>1){sub=`<span class="${fr?'ok':'warn'}">${fr} liberi su ${Q}</span>`+(us.length?' · '+us.map(u=>`${esc(u.name)}${qn(u,it.id)>1?' ×'+qn(u,it.id):''}`).join(', '):'');dot=fr?'':'busy'}
       else if(us.length){sub=us.map(u=>`In ${esc(u.name)}`).join(', ');dot='busy'}
       else sub='<span class="ok">Libero</span>';
       if(it.note)sub+=' · '+esc(it.note);
-      h+=`<button class="it" data-act="item" data-id="${it.id}"><span class="dot ${dot}"></span><span class="mid"><span class="t">${esc(it.name)}</span><span class="s">${sub}</span></span></button>`;
+      h+=`<button class="it" data-act="item" data-id="${it.id}"><span class="dot ${dot}"></span><span class="mid"><span class="t">${esc(it.name)}${Q>1?`<span class="qa dim">×${Q}</span>`:''}</span><span class="s">${sub}</span></span></button>`;
     }
     if(lastC!==null)h+='</div>';
     const top=`<div class="sec" style="padding-top:6px">${nFree} liberi su ${nAll}${m.date===TODAY?' oggi':' il '+esc(fmtS.format(parse(m.date)))}</div>`;
@@ -641,7 +707,7 @@ SCR.kits={
   body(){
     const ks=kitsSorted();
     let h='<div class="sec">Kit pronti</div><div class="plist">';
-    h+=ks.map(k=>`<button class="pc" style="--pc:var(--accent)" data-go="kit" data-id="${k.id}"><span class="opt" style="padding:0;border:0;width:auto"><span class="kic">KIT</span></span><span class="mid"><span class="t">${esc(k.name)}</span>${k.note?`<span class="s">${esc(k.note)}</span>`:''}</span><span class="rt">${(k.items||[]).filter(i=>S.items.has(i)).length} pz</span></button>`).join('')||'<div class="empty"><b>Nessun kit</b>Tocca + per crearne uno.</div>';
+    h+=ks.map(k=>`<button class="pc" style="--pc:var(--accent)" data-go="kit" data-id="${k.id}"><span class="opt" style="padding:0;border:0;width:auto"><span class="kic">KIT</span></span><span class="mid"><span class="t">${esc(k.name)}</span>${k.note?`<span class="s">${esc(k.note)}</span>`:''}</span><span class="rt">${units(k)} pz</span></button>`).join('')||'<div class="empty"><b>Nessun kit</b>Tocca + per crearne uno.</div>';
     h+='</div><div class="sec">Accessori automatici</div><div class="plist">';
     h+=rulesSorted().map(r=>`<div class="pc" style="--pc:var(--line)"><span class="mid"><span class="t">${esc(r.name)}</span><span class="s">${(r.groups||[]).map(g=>esc(g.label)+(g.n>1?' ×'+g.n:'')).join(' · ')}</span></span></div>`).join('');
     return h+`</div><div class="empty" style="padding:16px 24px">Le regole degli accessori si modificano dall'app sul computer.</div>`;
@@ -655,13 +721,13 @@ SCR.kit={
     const k=S.kits.get(r.id);
     if(!k)return '<div class="empty"><b>Kit non trovato</b></div>';
     const ids=(k.items||[]).filter(i=>S.items.has(i)),set=new Set(ids);
-    let h=`<div class="hero" style="--pc:var(--accent)"><h2>${esc(k.name)}</h2>${k.note?`<div class="when">${esc(k.note)}</div>`:''}<div class="stats"><span class="stat"><b>${ids.length}</b> pezzi</span></div></div>`;
+    let h=`<div class="hero" style="--pc:var(--accent)"><h2>${esc(k.name)}</h2>${k.note?`<div class="when">${esc(k.note)}</div>`:''}<div class="stats"><span class="stat"><b>${units(k)}</b> pezzi</span></div></div>`;
     if(!ids.length)return h+'<div class="empty"><b>Kit vuoto</b>Tocca “Aggiungi pezzi”.</div>';
     let lastC=null;
     for(const it of itemsSorted()){
       if(!set.has(it.id))continue;
       if(it.cat!==lastC){if(lastC!==null)h+='</div>';h+=`<div class="cat"><span>${esc(it.cat)}</span></div><div class="list">`;lastC=it.cat}
-      h+=`<div class="it"><span class="mid" data-act="item" data-id="${it.id}"><span class="t">${esc(it.name)}</span>${it.note?`<span class="s">${esc(it.note)}</span>`:''}</span><button class="rm" data-act="rmKitItem" data-id="${it.id}" aria-label="Togli ${esc(it.name)}">${IC.x}</button></div>`;
+      h+=`<div class="it"><span class="mid" data-act="${qty(it.id)>1?'qtyK':'item'}" data-id="${it.id}"><span class="t">${esc(it.name)}${qty(it.id)>1?`<span class="qa">×${qn(k,it.id)}</span>`:''}</span>${it.note?`<span class="s">${esc(it.note)}</span>`:''}</span><button class="rm" data-act="rmKitItem" data-id="${it.id}" aria-label="Togli ${esc(it.name)}">${IC.x}</button></div>`;
     }
     return h+'</div>';
   }
@@ -679,8 +745,8 @@ function renderSheet(){
 const SHEETS={
   kitApply(sh){
     const p=S.prods.get(sh.id);
-    return `<h3>Applica kit</h3><div class="sub">I pezzi occupati vengono sostituiti con un gemello libero${S.autoOn?'; schede e batterie si aggiungono da sole':''}.</div>`+
-      (kitsSorted().map(k=>`<button class="opt" data-act="doKit" data-id="${k.id}"><span class="kic">KIT</span><span class="mid"><span class="t">${esc(k.name)}</span><span class="s">${(k.items||[]).length} pezzi${k.note?' · '+esc(k.note):''}</span></span></button>`).join('')||'<div class="empty">Nessun kit.</div>');
+    return `<h3>Applica kit</h3><div class="sub">Prende le unità libere in quelle date${S.autoOn?'; schede e batterie si aggiungono da sole':''}.</div>`+
+      (kitsSorted().map(k=>`<button class="opt" data-act="doKit" data-id="${k.id}"><span class="kic">KIT</span><span class="mid"><span class="t">${esc(k.name)}</span><span class="s">${units(k)} pezzi${k.note?' · '+esc(k.note):''}</span></span></button>`).join('')||'<div class="empty">Nessun kit.</div>');
   },
   prod(sh){
     const p=sh.id?S.prods.get(sh.id):null;
@@ -697,16 +763,30 @@ const SHEETS={
     const it=S.items.get(sh.id);if(!it)return '<div class="empty">Pezzo non trovato.</div>';
     const fut=prodsSorted().filter(p=>p.end>=TODAY&&(p.items||[]).includes(it.id));
     return `<h3>${esc(it.name)}</h3><div class="sub">${esc(it.cat)}</div>
+    <div class="sw" style="border-top:0;padding-top:0"><span>Quantità in magazzino<small>Quanti pezzi uguali avete</small></span><span class="stepper"><button class="ib" data-act="itQty" data-id="${it.id}" data-d="-1" aria-label="Meno">−</button><b>${qty(it.id)}</b><button class="ib" data-act="itQty" data-id="${it.id}" data-d="1" aria-label="Più">+</button></span></div>
     <div class="fld"><span>Stato</span></div><div class="segs">${Object.keys(ST).map(k=>`<button data-act="itStatus" data-id="${it.id}" data-v="${k}" aria-pressed="${it.status===k}">${ST[k]}</button>`).join('')}</div>
     <label class="fld"><span>Note</span><input id="itNote" value="${esc(it.note||'')}" placeholder="Es. manca il paraluce" data-id="${it.id}"></label>
     <div class="sw"><span>Extra / vecchio<small>Nascosto nelle liste se non lo cerchi</small></span><button class="tg" role="switch" aria-checked="${!!it.extra}" data-act="itExtra" data-id="${it.id}"></button></div>
     <div class="fld" style="margin-top:8px"><span>Prossimi utilizzi</span></div>
-    <div class="uses">${fut.length?fut.map(p=>`<div style="--pc:${pc(p)}"><i></i><span class="mid"><span class="t" style="font-size:15px">${esc(p.name)}</span><span class="s">${esc(range(p))}</span></span></div>`).join(''):'<div style="color:var(--muted)">Nessuna produzione in programma.</div>'}</div>`;
+    <div class="uses">${fut.length?fut.map(p=>`<div style="--pc:${pc(p)}"><i></i><span class="mid"><span class="t" style="font-size:15px">${esc(p.name)}${qn(p,it.id)>1?' ×'+qn(p,it.id):''}</span><span class="s">${esc(range(p))}</span></span></div>`).join(''):'<div style="color:var(--muted)">Nessuna produzione in programma.</div>'}</div>`;
+  },
+  qty(sh){
+    const o=sh.mode==='prod'?S.prods.get(sh.oid):S.kits.get(sh.oid);const Q=qty(sh.id);if(!o)return '';
+    if(S.qv==null||S.qvFor!==sh.oid+sh.id){S.qvFor=sh.oid+sh.id;S.qv=qn(o,sh.id)||1}
+    const fr=sh.mode==='prod'?Math.max(0,freeOf(sh.id,o)):Q;
+    const others=sh.mode==='prod'?usersOf(sh.id,o,o.id).map(u=>esc(u.name)+(qn(u,sh.id)>1?' ×'+qn(u,sh.id):'')).join(', '):'';
+    const cur=qn(o,sh.id);
+    return `<h3>${sh.mode==='prod'?'Quante ne servono?':'Quante nel kit?'}</h3><div class="sub">${esc(iname(sh.id))}<br>${sh.mode==='prod'?`${fr} liberi su ${Q} in queste date${others?' · già in: '+others:''}`:`Il magazzino ne ha ${Q}`}</div>
+    <div class="qstep"><button class="ib big" data-act="qv" data-d="-1" aria-label="Meno">−</button><b id="qvNum">${S.qv}</b><button class="ib big" data-act="qv" data-d="1" aria-label="Più">+</button><span>di ${Q}</span></div>
+    <div class="err" id="qvWarn" style="min-height:1.2em">${sh.mode==='prod'&&S.qv>fr?`Ne restano liberi solo ${fr}: gli altri andranno in conflitto.`:''}</div>
+    <button class="btn primary" style="width:100%" data-act="qvOk">${cur?'Aggiorna':'Aggiungi'}</button>
+    ${cur?`<div class="row-btns"><button class="btn danger" data-act="qvDel">Togli</button></div>`:''}`;
   },
   newItem(){
     return `<h3>Nuovo pezzo</h3>
-    <label class="fld"><span>Nome</span><input id="niName" placeholder="Es. AMARAN 200X (2)" autocomplete="off"></label>
+    <label class="fld"><span>Nome</span><input id="niName" placeholder="Es. AMARAN 200X" autocomplete="off"></label>
     <label class="fld"><span>Categoria</span><select id="niCat">${cats().map(c=>`<option>${esc(c)}</option>`).join('')}</select></label>
+    <label class="fld"><span>Quantità</span><input id="niQty" type="number" min="1" max="99" value="1" inputmode="numeric"></label>
     <label class="fld"><span>Note</span><input id="niNote"></label>
     <button class="btn primary" style="width:100%" data-act="saveNewItem">Aggiungi al magazzino</button>`;
   },
@@ -747,10 +827,10 @@ const ACT={
   editProd:()=>openSheet({t:'prod',id:R().id}),
   kitApply:()=>openSheet({t:'kitApply',id:R().id}),
   doKit:b=>{const p=S.prods.get(R().id);closeSheet();applyKit(p,b.dataset.id)},
-  fill:()=>{const p=S.prods.get(R().id);if(!p)return;const set=new Set(p.items||[]);const f=fillAccessories(p,set);commitAuto(p,set,f.added,{title:'Completa accessori',missing:f.missing})},
-  undoAuto:()=>{const a=S.lastAuto,p=a&&S.prods.get(a.pid);if(!p)return;p.items=p.items.filter(x=>!a.ids.includes(x));S.lastAuto=null;saveItems(p);refresh()},
+  fill:()=>{const p=S.prods.get(R().id);if(!p)return;const cnt=cntOf(p);const f=fillAccessories(p,cnt);commitAuto(p,cnt,f.added,{title:'Completa accessori',missing:f.missing})},
+  undoAuto:()=>{const a=S.lastAuto,p=a&&S.prods.get(a.pid);if(!p)return;const c=cntOf(p);a.ids.forEach(i=>c.set(i,(c.get(i)||0)-1));setCnt(p,c);S.lastAuto=null;saveItems(p);refresh()},
   closeAuto:()=>{S.lastAuto=null;refresh()},
-  rmItem:b=>{const p=S.prods.get(R().id);if(!p)return;const id=b.dataset.id;p.items=p.items.filter(x=>x!==id);saveItems(p);refresh();snack('Tolto: '+iname(id),'Annulla',()=>{if(!p.items.includes(id)){p.items.push(id);saveItems(p);refresh()}})},
+  rmItem:b=>{const p=S.prods.get(R().id);if(!p)return;const id=b.dataset.id,was=qn(p,id);const c=cntOf(p);c.set(id,0);setCnt(p,c);saveItems(p);refresh();snack('Tolto: '+iname(id)+(was>1?' ×'+was:''),'Annulla',()=>{const c2=cntOf(p);c2.set(id,was);setCnt(p,c2);saveItems(p);refresh()})},
   pick:()=>{const r=R();S.pk={q:'',cat:'',free:false,on:false};go({v:'pick',mode:r.v==='kit'?'kit':'prod',id:r.id})},
   pkf:b=>{S.pk[b.dataset.f]=!S.pk[b.dataset.f];b.setAttribute('aria-pressed',S.pk[b.dataset.f]);renderBody()},
   pkcat:b=>{S.pk.cat=b.dataset.c;b.parentNode.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b));renderBody();window.scrollTo(0,0)},
@@ -758,8 +838,16 @@ const ACT={
   tog:b=>{
     const r=R(),id=b.dataset.id;
     if(r.mode==='prod'){const p=S.prods.get(r.id);if(p)toggleProdItem(p,id)}
-    else{const k=S.kits.get(r.id);if(!k)return;k.items=k.items.includes(id)?k.items.filter(x=>x!==id):[...k.items,id];const latest=[...k.items];write('kits/'+k.id,'update',{items:latest});refresh()}
+    else{const k=S.kits.get(r.id);if(!k)return;if(qty(id)>1){S.qv=null;openSheet({t:'qty',mode:'kit',oid:k.id,id});return}setKitQty(k,id,qn(k,id)?0:1)}
   },
+  qtyP:b=>{S.qv=null;openSheet({t:'qty',mode:'prod',oid:R().id,id:b.dataset.id})},
+  qtyK:b=>{S.qv=null;openSheet({t:'qty',mode:'kit',oid:R().id,id:b.dataset.id})},
+  qv:b=>{const sh=R().sheet;if(!sh)return;S.qv=Math.max(1,Math.min(qty(sh.id),(S.qv||1)+(+b.dataset.d)));renderSheet()},
+  qvOk:()=>{const sh=R().sheet;if(!sh)return;const n=S.qv||1;S.qv=null;closeSheet();
+    if(sh.mode==='prod'){const p=S.prods.get(sh.oid);if(p)setProdQty(p,sh.id,n)}else{const k=S.kits.get(sh.oid);if(k)setKitQty(k,sh.id,n)}},
+  qvDel:()=>{const sh=R().sheet;if(!sh)return;S.qv=null;closeSheet();
+    if(sh.mode==='prod'){const p=S.prods.get(sh.oid);if(p)setProdQty(p,sh.id,0)}else{const k=S.kits.get(sh.oid);if(k)setKitQty(k,sh.id,0)}},
+  itQty:b=>{const it=S.items.get(b.dataset.id);if(!it)return;const v=Math.max(1,Math.min(99,qty(it.id)+(+b.dataset.d)));if(v===qty(it.id))return;it.qty=v;write('items/'+it.id,'update',{qty:v});renderSheet();renderBody()},
   magFree:b=>{S.mag.free=!S.mag.free;b.setAttribute('aria-pressed',S.mag.free);renderBody()},
   magcat:b=>{S.mag.cat=b.dataset.c;b.parentNode.querySelectorAll('.chip[data-act=magcat]').forEach(c=>c.setAttribute('aria-pressed',c===b));renderBody();window.scrollTo(0,0)},
   item:b=>openSheet({t:'item',id:b.dataset.id,live:true}),
@@ -769,7 +857,7 @@ const ACT={
   saveNewItem:()=>{
     const name=$('#niName').value.trim(),cat=$('#niCat').value;if(!name){$('#niName').focus();return}
     const same=itemsSorted().filter(i=>i.cat===cat);const order=same.length?(same[same.length-1].order??9999)+0.01:9999;
-    const it={id:rid('i'),name,cat,note:$('#niNote').value.trim(),status:'ok',extra:false,order:Math.round(order*1000)/1000};
+    const it={id:rid('i'),name,cat,note:$('#niNote').value.trim(),status:'ok',extra:false,order:Math.round(order*1000)/1000,qty:Math.max(1,parseInt($('#niQty').value)||1)};
     S.items.set(it.id,it);const {id,...d}=it;write('items/'+id,'set',d);closeSheet();refresh();snack('Aggiunto: '+name);
   },
   saveProd:b=>{
@@ -781,8 +869,8 @@ const ACT={
     else{const nid=rid('p');const p={id:nid,name,start,end,color,notes,items:[]};S.prods.set(nid,p);write('prods/'+nid,'set',{name,start,end,color,notes,items:[]});
       history.back();setTimeout(()=>go({v:'prod',id:nid}),60)}
   },
-  dupProd:b=>{const p=S.prods.get(b.dataset.id);if(!p)return;const nid=rid('p');const d={name:p.name+' (copia)',start:p.start,end:p.end,color:p.color,notes:p.notes||'',items:[...(p.items||[])]};
-    S.prods.set(nid,{id:nid,...d});write('prods/'+nid,'set',d);history.back();setTimeout(()=>go({v:'prod',id:nid},true),60);snack('Duplicata')},
+  dupProd:b=>{const p=S.prods.get(b.dataset.id);if(!p)return;const nid=rid('p');const d={name:p.name+' (copia)',start:p.start,end:p.end,color:p.color,notes:p.notes||'',items:pack(p)};
+    S.prods.set(nid,unpack({id:nid,...d}));write('prods/'+nid,'set',d);history.back();setTimeout(()=>go({v:'prod',id:nid},true),60);snack('Duplicata')},
   delProd:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'dp','Tocca di nuovo per eliminare',()=>{const id=b.dataset.id;S.prods.delete(id);write('prods/'+id,'delete');history.go(-2)})},
   newKit:()=>openSheet({t:'kitEdit'}),
   editKit:()=>openSheet({t:'kitEdit',id:R().id}),
@@ -790,13 +878,141 @@ const ACT={
     if(id){const k=S.kits.get(id);if(!k)return;Object.assign(k,{name,note});write('kits/'+id,'update',{name,note});closeSheet();refresh()}
     else{const nid=rid('k');S.kits.set(nid,{id:nid,name,note,items:[]});write('kits/'+nid,'set',{name,note,items:[]});history.back();setTimeout(()=>go({v:'kit',id:nid}),60)}},
   delKit:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'dk','Tocca di nuovo per eliminare',()=>{const id=b.dataset.id;S.kits.delete(id);write('kits/'+id,'delete');history.go(-2)})},
-  rmKitItem:b=>{const k=S.kits.get(R().id);if(!k)return;const id=b.dataset.id;k.items=k.items.filter(x=>x!==id);write('kits/'+k.id,'update',{items:[...k.items]});refresh()},
+  rmKitItem:b=>{const k=S.kits.get(R().id);if(!k)return;setKitQty(k,b.dataset.id,0)},
   iosHint:()=>{closeSheet();setTimeout(()=>openSheet({t:'iosHint'}),80)},
   hintDone:()=>{LS.set('rf-ios-hint',true);closeSheet()},
   autoOn:b=>{S.autoOn=!S.autoOn;LS.set('rf-auto',S.autoOn);b.setAttribute('aria-checked',S.autoOn)},
   reload:()=>{loadData();snack('Aggiornamento…')},
   unlink:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'ul','Conferma',async()=>{try{await api('logout')}catch(_){}forget();location.replace(location.pathname)})},
 };
+/* ---------- Team (foglio Flussi, sola lettura) ---------- */
+const KLAB={set:'SET',post:'POST',altro:'ALTRO'};
+const fmtWD=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'numeric'});
+const fmtDS=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'numeric',month:'short'});
+const fmtSh=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'short'});
+const span2=(a,b)=>a===b?fmtDS.format(parse(a)):fmtSh.format(parse(a))+' → '+fmtSh.format(parse(b));
+const initials=n=>String(n).replace(/\(.*?\)/g,'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+const nice=n=>String(n).toLowerCase().replace(/(^|[\s'(-])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase());
+const hl=(t,q)=>{const e=esc(t);if(!q)return e;const i=t.toLowerCase().indexOf(q);return i<0?e:esc(t.slice(0,i))+'<mark>'+esc(t.slice(i,i+q.length))+'</mark>'+esc(t.slice(i+q.length))};
+S.team=LS.get('rf-team');S.tmQ='';S.meName=LS.get('rf-mename')||'';
+S.docs=LS.get('rf-docs');S.dcQ='';S.dcCat='';S.thumbs={};
+function isMe(p){
+  if(S.meName)return p.name.toUpperCase()===S.meName;
+  const loc=String(S.me||'').split('@')[0].toUpperCase().split(/[._-]/).filter(w=>w.length>2);
+  const first=p.name.toUpperCase().split(/[\s(]/)[0];
+  return first.length>=3&&loc.some(w=>w===first||w.startsWith(first)||first.startsWith(w));
+}
+function teamPeople(){
+  if(!S.team)return[];
+  return S.team.people.map(p=>({...p,fut:(p.items||[]).filter(i=>i.to>=TODAY),now:(p.items||[]).find(i=>i.from<=TODAY&&i.to>=TODAY),me:isMe(p)}));
+}
+function loadTeam(force){
+  if(S.teamLoading)return;S.teamLoading=true;
+  api('getTeam',!!force).then(t=>{S.team=t;S.teamErr='';LS.set('rf-team',t)}).catch(e=>{S.teamErr=e.message||'errore'})
+   .finally(()=>{S.teamLoading=false;if(['team','person'].includes(R().v)){renderHead();renderBody()}});
+}
+function loadDocs(force){
+  if(S.docsLoading)return;S.docsLoading=true;
+  api('getDocs',!!force).then(d=>{S.docs=d;S.docsErr='';LS.set('rf-docs',d);
+    const need=d.files.filter(f=>f.thumb&&!(f.id in S.thumbs)).map(f=>f.id);
+    if(need.length)api('getDocThumbs',need).then(t=>{need.forEach(id=>S.thumbs[id]=t[id]||'');if(R().v==='docs')renderBody()}).catch(()=>{});
+  }).catch(e=>{S.docsErr=e.message||'errore'}).finally(()=>{S.docsLoading=false;if(R().v==='docs'){renderHead();renderBody()}});
+}
+const tmRefresh=()=>`<button class="ib" data-act="tmReload" aria-label="Aggiorna">${IC.sync||'↻'}</button>`;
+SCR.team={
+  title:()=>'Team',
+  acts:tmRefresh,
+  head:()=>`<label class="search">${IC.search}<input type="search" id="tmQ" placeholder="Cerca persona o lavoro" value="${esc(S.tmQ)}" autocomplete="off"></label>`,
+  body(){
+    if(!S.team){if(!S.teamLoading&&!S.teamErr)setTimeout(()=>loadTeam(false),0);return S.teamErr?`<div class="empty"><b>Foglio Flussi non raggiungibile</b>${esc(S.teamErr)}</div>`:'<div class="empty"><b>Carico il team…</b>Leggo il foglio Flussi.</div>'}
+    if(!S.teamFresh){S.teamFresh=1;setTimeout(()=>loadTeam(false),0)}
+    const q=S.tmQ.trim().toLowerCase();
+    const ppl=teamPeople().filter(p=>!q||p.name.toLowerCase().includes(q)||(p.items||[]).some(i=>i.t.toLowerCase().includes(q))||(p.projects||[]).some(k=>S.team.projects[k].name.toLowerCase().includes(q)));
+    const groups=[['Tu',ppl.filter(p=>p.me)],['Team',ppl.filter(p=>!p.me&&!p.risorsa)],['Studio e mezzi',ppl.filter(p=>!p.me&&p.risorsa)]];
+    const h=groups.filter(g=>g[1].length).map(([g,l])=>`<div class="sec">${g}</div><div class="list">`+l.map(p=>{
+      const hit=q&&!p.name.toLowerCase().includes(q)?(p.items||[]).find(i=>i.t.toLowerCase().includes(q)):null;
+      const sub=hit?hl(hit.t,q)+' · '+esc(span2(hit.from,hit.to)):p.now?'<span class="ok">Oggi</span> · '+esc(p.now.t):p.fut[0]?esc(p.fut[0].t)+' · '+esc(fmtSh.format(parse(p.fut[0].from))):(p.projects?p.projects.length+' progetti come PM':'Niente in programma');
+      return `<button class="it" data-go="person" data-id="${esc(p.name)}"><span class="av ${p.me?'me':''}">${esc(initials(p.name))}</span><span class="mid"><span class="t">${hl(nice(p.name),q)}</span><span class="s">${sub}</span></span>${p.fut.length?`<span class="cnt">${p.fut.length}</span>`:''}</button>`}).join('')+'</div>').join('');
+    return (h||'<div class="empty"><b>Nessun risultato</b>Prova con un altro nome o lavoro.</div>')+'<p class="tm-src">Dati dal foglio <b>Flussi</b>, in sola lettura: per cambiarli modifica il foglio.</p>';
+  }
+};
+SCR.person={
+  title:r=>esc(nice(r.id)),
+  acts:r=>{const p=teamPeople().find(x=>x.name===r.id);return p&&!p.risorsa?`<button class="ib txt" data-act="tmMe" data-id="${esc(r.id)}">${p.me&&S.meName?'Non sono io':p.me?'Sei tu':'Sono io'}</button>`:''},
+  body(r){
+    const p=teamPeople().find(x=>x.name===r.id);
+    if(!p)return '<div class="empty"><b>Persona non trovata</b></div>';
+    const t=S.team,days=[];for(let i=0;i<14;i++)days.push(addD(TODAY,i));
+    const on=d=>(p.items||[]).filter(i=>i.from<=d&&i.to>=d);
+    const strip=days.map(d=>{const l=on(d),dw=parse(d).getDay();return `<div class="${dw===0||dw===6?'we':''} ${d===TODAY?'td':''}"><b>${esc(fmtWD.format(parse(d)))}</b>${l.map(i=>`<i class="k-${i.kind}"></i>`).join('')}</div>`}).join('');
+    const row=i=>`<div class="tm-row ${i.to<TODAY?'past':''}"><span class="kd k-${i.kind}">${KLAB[i.kind]}</span><span class="mid"><span class="t">${esc(i.t)}</span><span class="s ${i.from<=TODAY&&i.to>=TODAY?'now':''}">${i.from<=TODAY&&i.to>=TODAY?'In corso · ':''}${esc(span2(i.from,i.to))}</span></span></div>`;
+    const past=(p.items||[]).filter(i=>i.to<TODAY).reverse(),prj=(p.projects||[]).map(k=>t.projects[k]),hd=(p.hd||[]).map(k=>t.hd[k]);
+    const nSet=p.fut.filter(i=>i.kind==='set').length,nPost=p.fut.filter(i=>i.kind==='post').length;
+    return `<div class="hero tm-hero" style="--pc:var(--brand)"><span class="av big">${esc(initials(p.name))}</span><div><h2>${esc(nice(p.name))}</h2><div class="when">${p.risorsa?'Studio / mezzo':'Team'}${p.me?' · sei tu':''}</div></div>
+      <div class="stats"><span class="stat"><b>${p.fut.length}</b> in programma</span>${nSet?`<span class="stat"><b>${nSet}</b> set</span>`:''}${nPost?`<span class="stat"><b>${nPost}</b> post</span>`:''}${prj.length?`<span class="stat"><b>${prj.length}</b> progetti PM</span>`:''}</div></div>
+      <div class="sec">Prossimi 14 giorni</div><div class="tm-strip">${strip}</div>
+      <div class="tm-leg"><span><i class="k-set"></i>Set</span><span><i class="k-post"></i>Post</span><span><i class="k-altro"></i>Altro</span></div>
+      <div class="sec">In programma</div><div class="list">${p.fut.length?p.fut.map(row).join(''):'<div class="it"><span class="s">Niente nel Flusso lavorazioni per i prossimi 60 giorni.</span></div>'}</div>
+      ${prj.length?`<div class="sec">Progetti come PM</div><div class="list">${prj.map(x=>`<div class="it"><span class="mid"><span class="t">${esc(x.name)}</span><span class="s">${esc(x.stato||'—')}${x.start||x.end?' · '+(x.start?esc(fmtSh.format(parse(x.start))):'…')+' → '+(x.end?esc(fmtSh.format(parse(x.end))):'…'):''}${x.note?' · '+esc(x.note):''}</span></span></div>`).join('')}</div>`:''}
+      ${hd.length?`<div class="sec">Hard disk in mano</div><div class="list">${hd.map(x=>`<div class="it"><span style="font-size:18px">${esc(x.stato)}</span><span class="mid"><span class="t">${esc(x.nome)}</span><span class="s">${x.pm?'PM '+esc(x.pm):''}${x.uscita?(x.pm?' · ':'')+'uscito '+esc(x.uscita):''}</span></span></div>`).join('')}</div>`:''}
+      ${past.length?`<div class="sec">Ultimi 7 giorni</div><div class="list">${past.map(row).join('')}</div>`:''}<div style="height:24px"></div>`;
+  }
+};
+
+/* ---------- Documenti ---------- */
+const EXT_LAB={pptx:'PPTX',docx:'DOCX',xlsx:'XLSX',pdf:'PDF',png:'PNG',jpg:'JPG',jpeg:'JPG',svg:'SVG',ai:'AI',eps:'EPS',zip:'ZIP',mp4:'MP4',mov:'MOV',psd:'PSD'};
+const fsize=b=>!b?'':b<1048576?Math.max(1,Math.round(b/1024))+' KB':(b/1048576).toFixed(b<10485760?1:0).replace('.',',')+' MB';
+SCR.docs={
+  title:()=>'Documenti',
+  acts:()=>`<button class="ib" data-act="dcReload" aria-label="Aggiorna">${IC.sync||'↻'}</button>`,
+  head:()=>{const d=S.docs;const cats=d?d.cats.filter(c=>d.files.some(x=>x.cat===c)):[];
+    return `<label class="search">${IC.search}<input type="search" id="dcQ" placeholder="Cerca documento" value="${esc(S.dcQ)}" autocomplete="off"></label>
+    ${cats.length?`<div class="chips"><button class="chip" data-act="dcCat" data-c="" aria-pressed="${!S.dcCat}">Tutti</button>${cats.map(c=>`<button class="chip" data-act="dcCat" data-c="${esc(c)}" aria-pressed="${S.dcCat===c}">${esc(c)}</button>`).join('')}</div>`:''}`},
+  body(){
+    if(!S.docs){if(!S.docsLoading&&!S.docsErr)setTimeout(()=>loadDocs(false),0);
+      return S.docsErr?(/creaCartellaDocumenti/.test(S.docsErr)?'<div class="empty"><b>Cartella non ancora creata</b>Chi gestisce l\'app deve eseguire una volta <i>creaCartellaDocumenti</i> in Apps Script.</div>':`<div class="empty"><b>Documenti non raggiungibili</b>${esc(S.docsErr)}</div>`):'<div class="empty"><b>Carico i documenti…</b></div>'}
+    if(!S.docsFresh){S.docsFresh=1;setTimeout(()=>loadDocs(false),0)}
+    const d=S.docs,q=S.dcQ.trim().toLowerCase();
+    if(!d.files.length)return '<div class="empty"><b>Ancora nessun documento</b>Metti i file nella cartella Drive «BriefApp – Documenti»: compaiono qui da soli.</div>';
+    const list=d.files.filter(x=>(!S.dcCat||x.cat===S.dcCat)&&(!q||x.name.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q)));
+    if(!list.length)return '<div class="empty"><b>Nessun risultato</b></div>';
+    const cats=S.dcCat||q?[[S.dcCat||'Risultati',list]]:d.cats.map(c=>[c,list.filter(x=>x.cat===c)]).filter(c=>c[1].length);
+    return cats.map(([c,l])=>`<div class="sec">${esc(c)}</div><div class="list">`+l.map(x=>{const lab=EXT_LAB[x.ext]||(x.ext||'FILE').toUpperCase(),th=S.thumbs[x.id];
+      return `<button class="it" data-act="doc" data-id="${x.id}"><span class="dth">${th?`<img src="${th}" alt="">`:`<span>${esc(lab)}</span>`}</span><span class="mid"><span class="t">${hl(x.name,q)}</span><span class="s">${esc(lab)}${x.size?' · '+fsize(x.size):''} · ${esc(fmtSh.format(new Date(x.upd)))}</span></span>${IC.down||''}</button>`}).join('')+'</div>').join('')+'<div style="height:24px"></div>';
+  }
+};
+SHEETS.doc=sh=>{
+  const x=S.docs&&S.docs.files.find(f=>f.id===sh.id);if(!x)return '<div class="empty">File non trovato</div>';
+  const gdoc=/google-apps/.test(x.mime)&&!/drawing/.test(x.mime),lab=EXT_LAB[x.ext]||(x.ext||'FILE').toUpperCase(),th=S.thumbs[x.id];
+  return `${th?`<img class="dbig" src="${th}" alt="">`:''}<h3>${esc(x.name)}</h3><div class="sub">${esc(x.cat)} · ${esc(lab)}${x.size?' · '+fsize(x.size):''}</div>
+   ${x.dl?`<button class="btn primary wide" data-act="dl" data-id="${x.id}">Scarica ${esc(lab)}</button>`:'<div class="sub">Troppo grande per scaricarlo qui: aprilo in Drive.</div>'}
+   ${gdoc?`<button class="btn wide" data-act="dl" data-id="${x.id}" data-pdf="1" style="margin-top:10px">Scarica PDF</button>`:''}
+   <a class="btn wide" href="${esc(x.url)}" target="_blank" rel="noopener" style="margin-top:10px">Apri in Google Drive</a>`;
+};
+function b64file(r){const bin=atob(r.b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new File([u],r.name,{type:r.mime||'application/octet-stream'})}
+async function deliver(f){
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:f.name});return}}catch(e){if(e&&e.name==='AbortError')return}
+  const url=URL.createObjectURL(f),a=document.createElement('a');a.href=url;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+Object.assign(ACT,{
+  tmReload:()=>{snack('Rileggo il foglio Flussi…');loadTeam(true)},
+  dcReload:()=>{snack('Aggiorno i documenti…');S.thumbs={};loadDocs(true)},
+  tmMe:b=>{const p=teamPeople().find(x=>x.name===b.dataset.id);S.meName=p&&p.me&&S.meName?'':b.dataset.id.toUpperCase();LS.set('rf-mename',S.meName);renderHead();renderBody()},
+  dcCat:b=>{S.dcCat=b.dataset.c;renderHead();renderBody()},
+  doc:b=>openSheet({t:'doc',id:b.dataset.id}),
+  dl:async b=>{
+    if(b.disabled)return;const old=b.textContent;b.disabled=true;b.textContent='Preparo il file…';
+    try{const r=await api('getDocFile',b.dataset.id,!!b.dataset.pdf);const f=b64file(r);closeSheet();
+      if(/iPhone|iPad|iPod/.test(navigator.userAgent))snack('Pronto: '+f.name,'Salva',()=>deliver(f));else{deliver(f);snack('Scaricato: '+f.name)}}
+    catch(e){snack(e.message||'Download non riuscito')}
+    finally{b.disabled=false;b.textContent=old}
+  }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='tmQ'){S.tmQ=e.target.value;renderBody()}
+  else if(e.target.id==='dcQ'){S.dcQ=e.target.value;renderBody()}
+});
+
 document.addEventListener('click',e=>{
   const g=e.target.closest('[data-go]');
   if(g){go({v:g.dataset.go,id:g.dataset.id});return}
@@ -892,7 +1108,7 @@ async function connect(url,token){
   if(!/^https:\/\/script\.google\.com\//.test(url)||!/^[0-9a-f]{64}$/.test(token)){showSetup('Link di accesso non valido.');return}
   CFG={url,token};expiredShown=false;
   const b=$('#suGo');if(b){b.disabled=true;b.textContent='Collegamento…'}
-  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;S.me=r.me||'';LS.set('rf-me',S.me);ingest(r.data);cacheSave();start();if(S.me)snack('Ciao '+S.me.split('@')[0].split(/[._-]/)[0].replace(/^./,c=>c.toUpperCase())+'!')}
+  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;S.me=r.me||'';LS.set('rf-me',S.me);ingest(r.data);cacheSave();start();if(S.me)snack('Ciao '+(S.me.split('@')[0].split(/[._-]/).find(w=>w.length>1)||S.me).replace(/^./,c=>c.toUpperCase())+'!')}
   catch(e){if(!/Accesso/.test(e.message)){CFG=null;showSetup('Non riesco a raggiungere l\'archivio. Riprova tra poco.')}}
 }
 function start(){
