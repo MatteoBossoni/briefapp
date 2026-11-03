@@ -202,6 +202,13 @@ body.sub .snack{bottom:calc(var(--sab) + 84px)}
 .setup .logo{font-family:var(--f-display);font-weight:700;font-size:40px;text-transform:uppercase;background:var(--fg);color:var(--bg);display:inline-block;padding:0 12px;transform:rotate(-2deg);margin-bottom:20px}
 .setup p{color:var(--muted)}
 .err{color:var(--bad);font-size:14px;margin:-4px 0 12px}
+.qb{font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--muted);margin-left:2px}
+.it.on .cb:has(b)::after{display:none}.cb b{font-size:12px;color:#000}
+.qstep{display:flex;align-items:center;justify-content:center;gap:18px;margin:16px 0 6px}
+.qstep b{font-family:var(--f-display);font-size:56px;min-width:70px;text-align:center;line-height:1}
+.qstep span{color:var(--muted)}
+.ib.big{width:56px;height:56px;border:1px solid var(--line);font-size:28px;color:var(--fg)}
+.stepper{display:flex;align-items:center;gap:6px}.stepper b{min-width:26px;text-align:center;font-size:17px}.stepper .ib{border:1px solid var(--line);width:38px;height:38px;color:var(--fg)}
 .app{color:var(--brand);font-weight:inherit}
 
 /* ===== Agenzia Brief theme ===== */
@@ -355,26 +362,39 @@ function usersOf(itemId,span,exceptId){
   const r=[];for(const p of S.prods.values()){if(p.id!==exceptId&&overlap(p,span)&&(p.items||[]).includes(itemId)) r.push(p)}
   return r.sort((a,b)=>a.start.localeCompare(b.start));
 }
-function clashes(p){let n=0;for(const id of p.items||[]){if(S.items.has(id)&&usersOf(id,p,p.id).length) n++}return n}
+/* quantità: p.items = id unici, p.q = {id: unità} quando sono più di una */
+const qty=id=>Math.max(1,+(S.items.get(id)?.qty)||1);
+const qn=(p,id)=>(p.items||[]).includes(id)?Math.max(1,+(p.q?.[id])||1):0;
+const usedBy=(id,span,except)=>usersOf(id,span,except).reduce((s,u)=>s+qn(u,id),0);
+const freeOf=(id,p)=>qty(id)-usedBy(id,p,p.id);
+const inClash=(p,id)=>S.items.has(id)&&qn(p,id)>freeOf(id,p);
+const units=p=>(p.items||[]).filter(i=>S.items.has(i)).reduce((s,i)=>s+qn(p,i),0);
+const cntOf=p=>new Map((p.items||[]).map(id=>[id,qn(p,id)]));
+function setCnt(p,cnt){p.items=[];p.q={};for(const [id,n] of cnt){if(n>0){p.items.push(id);if(n>1)p.q[id]=n}}}
+const pack=p=>(p.items||[]).map(id=>{const n=qn(p,id);return n>1?id+':'+n:id});
+function unpack(x){const items=[],q={...(x.q||{})};for(const e of x.items||[]){const [id,n]=String(e).split(':');if(!id)continue;const k=Math.max(1,parseInt(n)||1);if(items.includes(id))q[id]=(q[id]||1)+k;else{items.push(id);if(n)q[id]=k}}for(const id in q)if(!items.includes(id)||q[id]<=1)delete q[id];return{...x,items,q}}
+const summarize=ids=>{const m=new Map();ids.forEach(i=>m.set(i,(m.get(i)||0)+1));return [...m].map(([i,n])=>iname(i)+(n>1?' ×'+n:''))};
+function clashes(p){let n=0;for(const id of p.items||[]){if(inClash(p,id)) n++}return n}
 const iname=id=>S.items.get(id)?.name||'pezzo eliminato';
 const base=n=>String(n).replace(/\s*\(\d+\)$/,'');
-const isFreeFor=(id,p,set)=>{const it=S.items.get(id);return !!it&&it.status==='ok'&&!set.has(id)&&!usersOf(id,p,p.id).length};
+
 const hasRule=id=>[...S.rules.values()].some(r=>(r.cams||[]).includes(id));
 
 /* ---------- automatic accessories & kits (same logic as the desktop app) ---------- */
-function fillAccessories(p,set){
-  const alloc=new Set(),added=[],missing=[],sharedDone=new Set();
-  for(const cam of itemsSorted().filter(it=>set.has(it.id))){
+function fillAccessories(p,cnt){
+  const alloc=new Map(),added=[],missing=[],sharedDone=new Set();
+  for(const cam of itemsSorted().filter(it=>cnt.get(it.id)>0)){
     for(const r of rulesSorted()){
       if(!(r.cams||[]).includes(cam.id))continue;
       (r.groups||[]).forEach((g,gi)=>{
         if(g.shared){const key=r.id+':'+gi;if(sharedDone.has(key))return;sharedDone.add(key)}
         const cands=(g.cands||[]).filter(c=>S.items.has(c));
-        for(let k=0;k<(g.n||1);k++){
-          let pick=cands.find(c=>set.has(c)&&!alloc.has(c));
-          if(!pick){pick=cands.find(c=>isFreeFor(c,p,set));if(pick){set.add(pick);added.push(pick)}}
-          if(pick)alloc.add(pick);else{missing.push(`${g.label||'accessorio'} per ${cam.name}`);break}
-        }
+        let need=g.n||1;
+        for(const c of cands){if(need<=0)break;const have=(cnt.get(c)||0)-(alloc.get(c)||0);if(have>0){const t=Math.min(have,need);alloc.set(c,(alloc.get(c)||0)+t);need-=t}}
+        for(const c of cands){if(need<=0)break;if(S.items.get(c).status!=='ok')continue;
+          const left=freeOf(c,p)-(cnt.get(c)||0);if(left<=0)continue;const t=Math.min(left,need);
+          cnt.set(c,(cnt.get(c)||0)+t);alloc.set(c,(alloc.get(c)||0)+t);for(let k=0;k<t;k++)added.push(c);need-=t}
+        if(need>0)missing.push(`${g.label||'accessorio'} per ${cam.name}`);
       });
     }
   }
@@ -382,35 +402,40 @@ function fillAccessories(p,set){
 }
 function applyKit(p,kid){
   const k=S.kits.get(kid);if(!p||!k)return;
-  const set=new Set(p.items||[]),added=[],swapped=[],clash=[];
+  const cnt=cntOf(p),added=[],clash=[];
   const ruleCands=new Set();for(const r of S.rules.values())for(const g of r.groups||[])for(const c of g.cands||[])ruleCands.add(c);
   for(const id of k.items||[]){
-    if(!S.items.has(id)||set.has(id))continue;
-    if(isFreeFor(id,p,set)){set.add(id);added.push(id);continue}
-    const it=S.items.get(id);
-    const alt=itemsSorted().find(x=>x.id!==id&&base(x.name)===base(it.name)&&isFreeFor(x.id,p,set));
-    if(alt){set.add(alt.id);added.push(alt.id);swapped.push(`${it.name} → ${alt.name}`);continue}
+    const it=S.items.get(id);if(!it)continue;
+    const have=cnt.get(id)||0;let want=qn(k,id)-have;if(want<=0)continue;
+    const left=it.status==='ok'?Math.max(0,freeOf(id,p)-have):0,t=Math.min(left,want);
+    if(t){cnt.set(id,have+t);for(let i=0;i<t;i++)added.push(id);want-=t}
+    if(want<=0)continue;
     if(S.autoOn&&ruleCands.has(id))continue;
-    set.add(id);added.push(id);clash.push(it.name);
+    cnt.set(id,(cnt.get(id)||0)+want);for(let i=0;i<want;i++)added.push(id);clash.push(it.name+(want>1?' ×'+want:''));
   }
-  const fill=S.autoOn?fillAccessories(p,set):{added:[],missing:[]};
-  commitAuto(p,set,[...added,...fill.added],{title:`Kit “${k.name}”`,swapped,clash,missing:fill.missing});
+  const fill=S.autoOn?fillAccessories(p,cnt):{added:[],missing:[]};
+  commitAuto(p,cnt,[...added,...fill.added],{title:`Kit “${k.name}”`,clash,missing:fill.missing});
 }
-function commitAuto(p,set,ids,info){
-  p.items=[...set];
+function commitAuto(p,cnt,ids,info){
+  setCnt(p,cnt);
   S.lastAuto=(ids.length||info.missing?.length||info.clash?.length)?{pid:p.id,ids,...info}:null;
   saveItems(p);refresh();
 }
-function saveItems(p){const latest=[...p.items];write('prods/'+p.id,'update',{items:latest})}
-function toggleProdItem(p,iid){
-  const set=new Set(p.items||[]);const adding=!set.has(iid);adding?set.add(iid):set.delete(iid);
+function saveItems(p){const latest=pack(p);write('prods/'+p.id,'update',{items:latest})}
+function setProdQty(p,iid,n){
+  const cnt=cntOf(p),adding=!cnt.get(iid)&&n>0;cnt.set(iid,n);
   if(adding&&S.autoOn&&hasRule(iid)){
-    const f=fillAccessories(p,set);p.items=[...set];saveItems(p);refresh();
-    if(f.added.length) snack(`+ ${f.added.map(iname).join(', ')}`,'Annulla',()=>{p.items=p.items.filter(x=>!f.added.includes(x));saveItems(p);refresh()});
+    const f=fillAccessories(p,cnt);setCnt(p,cnt);saveItems(p);refresh();
+    if(f.added.length) snack(`+ ${summarize(f.added).join(', ')}`,'Annulla',()=>{const c=cntOf(p);f.added.forEach(i=>c.set(i,(c.get(i)||0)-1));setCnt(p,c);saveItems(p);refresh()});
     else if(f.missing.length) snack('Niente di libero per: '+f.missing.join('; '));
     return;
   }
-  p.items=[...set];saveItems(p);refresh();
+  setCnt(p,cnt);saveItems(p);refresh();
+}
+function setKitQty(k,iid,n){const c=cntOf(k);c.set(iid,n);setCnt(k,c);write('kits/'+k.id,'update',{items:pack(k)});refresh()}
+function toggleProdItem(p,iid){
+  if(qty(iid)>1){openSheet({t:'qty',mode:'prod',oid:p.id,id:iid});return}
+  setProdQty(p,iid,qn(p,iid)?0:1);
 }
 
 /* ---------- backend ---------- */
@@ -437,8 +462,8 @@ function write(path,op,data){
 }
 function ingest(d){
   S.items=new Map(d.items.map(x=>[x.id,x]));
-  S.prods=new Map(d.prods.map(x=>[x.id,{...x,items:[...(x.items||[])]}]));
-  S.kits=new Map(d.kits.map(x=>[x.id,{...x,items:[...(x.items||[])]}]));
+  S.prods=new Map(d.prods.map(x=>[x.id,unpack(x)]));
+  S.kits=new Map(d.kits.map(x=>[x.id,unpack(x)]));
   S.rules=new Map(d.rules.map(x=>[x.id,{...x,cams:[...(x.cams||[])],groups:(x.groups||[]).map(g=>({...g,cands:[...(g.cands||[])]}))}]));
   S.loaded=true;
 }
@@ -513,7 +538,7 @@ SCR.prods={
     for(const p of ps){
       const m=fmtM.format(parse(p.start));
       if(m!==lastM){if(lastM)h+='</div>';h+=`<div class="sec">${esc(m)}</div><div class="plist">`;lastM=m}
-      const c=clashes(p),n=(p.items||[]).filter(i=>S.items.has(i)).length,live=p.start<=TODAY&&p.end>=TODAY;
+      const c=clashes(p),n=units(p),live=p.start<=TODAY&&p.end>=TODAY;
       const d=parse(p.start);
       h+=`<button class="pc" style="--pc:${pc(p)}" data-go="prod" data-id="${p.id}">
         <span class="dt"><b>${d.getDate()}</b><small>${esc(fmtMon.format(d).replace('.',''))}</small></span>
@@ -533,15 +558,15 @@ SCR.prod={
     const p=S.prods.get(r.id);
     if(!p)return '<div class="empty"><b>Produzione non trovata</b>Forse è stata eliminata.</div>';
     const ids=(p.items||[]).filter(i=>S.items.has(i));
-    const nC=clashes(p);
+    const nC=clashes(p),nU=units(p);
     let h=`<div class="hero" style="--pc:${pc(p)}"><h2>${esc(p.name)}</h2><div class="when">${esc(range(p))}${days(p)>1?` · ${days(p)} giorni`:''}</div>
       ${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}
-      <div class="stats"><span class="stat"><b>${ids.length}</b> pezzi</span>${nC?`<span class="stat bad"><b>${nC}</b> in conflitto</span>`:'<span class="stat">Nessun conflitto</span>'}</div></div>
+      <div class="stats"><span class="stat"><b>${nU}</b> pezzi</span>${nC?`<span class="stat bad"><b>${nC}</b> in conflitto</span>`:'<span class="stat">Nessun conflitto</span>'}</div></div>
       <div class="acts"><button class="btn" data-act="kitApply">${IC.kit}Applica kit</button><button class="btn" data-act="fill">${IC.bolt}Completa accessori</button></div>`;
     const a=S.lastAuto;
     if(a&&a.pid===p.id){
-      let t=`<b>${esc(a.title)}:</b> `+(a.ids.length?`aggiunti ${a.ids.length} pezzi`:'niente da aggiungere');
-      if(a.swapped?.length)t+=`<span class="miss" style="color:var(--fg)">Sostituiti perché occupati: ${a.swapped.map(esc).join('; ')}</span>`;
+      const sm=summarize(a.ids);
+      let t=`<b>${esc(a.title)}:</b> `+(a.ids.length?`aggiunti ${a.ids.length} pezzi`+(sm.length<=5?` (${sm.map(esc).join(', ')})`:''):'niente da aggiungere');
       if(a.clash?.length)t+=`<span class="miss">In conflitto: ${a.clash.map(esc).join(', ')}</span>`;
       if(a.missing?.length)t+=`<span class="miss">Niente di libero per: ${a.missing.map(esc).join('; ')}</span>`;
       h+=`<div class="note"><span class="tx">${t}</span>${a.ids.length?'<button data-act="undoAuto">Annulla</button>':''}<button data-act="closeAuto" aria-label="Chiudi">✕</button></div>`;
@@ -551,11 +576,11 @@ SCR.prod={
     for(const it of itemsSorted()){
       if(!set.has(it.id))continue;
       if(it.cat!==lastC){if(lastC!==null)h+='</div>';h+=`<div class="cat"><span>${esc(it.cat)}</span></div><div class="list">`;lastC=it.cat}
-      const us=usersOf(it.id,p,p.id);
-      let sub=us.map(u=>`<span class="bad">Conflitto: ${esc(u.name)} · ${esc(fmtS.format(parse(u.start)))}</span>`).join(' ');
+      const us=inClash(p,it.id)?usersOf(it.id,p,p.id):[],n=qn(p,it.id),Q=qty(it.id);
+      let sub=us.map(u=>`<span class="bad">Conflitto: ${esc(u.name)}${qn(u,it.id)>1?' ×'+qn(u,it.id):''} · ${esc(fmtS.format(parse(u.start)))}</span>`).join(' ');
       if(it.status!=='ok')sub+=` <span class="warn">${ST[it.status]}</span>`;
       if(!sub&&it.note)sub=esc(it.note);
-      h+=`<div class="it"><span class="mid" data-act="item" data-id="${it.id}"><span class="t">${esc(it.name)}</span>${sub?`<span class="s">${sub}</span>`:''}</span><button class="rm" data-act="rmItem" data-id="${it.id}" aria-label="Togli ${esc(it.name)}">${IC.x}</button></div>`;
+      h+=`<div class="it"><span class="mid" data-act="${Q>1?'qtyP':'item'}" data-id="${it.id}"><span class="t">${esc(it.name)}${Q>1?` <span class="qb">${n} di ${Q}</span>`:''}</span>${sub?`<span class="s">${sub}</span>`:''}</span><button class="rm" data-act="rmItem" data-id="${it.id}" aria-label="Togli ${esc(it.name)}">${IC.x}</button></div>`;
     }
     return h+'</div>';
   }
@@ -576,27 +601,29 @@ SCR.pick={
     const isP=r.mode==='prod',o=isP?S.prods.get(r.id):S.kits.get(r.id);
     if(!o)return '<div class="empty"><b>Non trovato</b></div>';
     const on=new Set(o.items||[]),k=S.pk,q=k.q.trim().toLowerCase();
-    let h='',lastC=null,hid=0,n=0;
+    let h='',lastC=null,hid=0,nn=0;
     for(const it of itemsSorted()){
       const sel=on.has(it.id);
       if(k.cat&&it.cat!==k.cat)continue;
       if(q&&!(it.name+' '+(it.note||'')+' '+it.cat).toLowerCase().includes(q))continue;
       if(k.on&&!sel)continue;
-      const us=isP?usersOf(it.id,o,o.id):[];
-      if(isP&&k.free&&!sel&&(us.length||it.status!=='ok'))continue;
+      const us=isP?usersOf(it.id,o,o.id):[],Q=qty(it.id),fr=isP?Math.max(0,freeOf(it.id,o)):Q,n=qn(o,it.id),clash=isP&&sel&&n>freeOf(it.id,o);
+      if(isP&&k.free&&!sel&&(fr<=0||it.status!=='ok'))continue;
       if(it.extra&&!sel&&!S.showExtra&&!q){hid++;continue}
       if(it.cat!==lastC){if(lastC!==null)h+='</div>';h+=`<div class="cat"><span>${esc(it.cat)}</span></div><div class="list">`;lastC=it.cat}
       let sub='';
       if(it.status!=='ok')sub=`<span class="warn">${ST[it.status]}</span>`;
-      else if(us.length)sub=us.map(u=>`<span class="${sel?'bad':'warn'}">${sel?'Conflitto: ':'In '}${esc(u.name)} · ${esc(fmtS.format(parse(u.start)))}</span>`).join(' ');
+      else if(isP&&Q>1)sub=`<span class="${fr?'ok':'warn'}">${fr} liberi su ${Q}</span>`+(us.length?' · '+us.map(u=>`<span class="${clash?'bad':'warn'}">${esc(u.name)}${qn(u,it.id)>1?' ×'+qn(u,it.id):''}</span>`).join(', '):'');
+      else if(us.length)sub=us.map(u=>`<span class="${clash?'bad':'warn'}">${clash?'Conflitto: ':'In '}${esc(u.name)} · ${esc(fmtS.format(parse(u.start)))}</span>`).join(' ');
       else if(isP)sub='<span class="ok">Libero</span>';
+      else if(Q>1)sub=`${Q} in magazzino`;
       if(it.extra)sub+=' · extra';
-      const off=isP&&!sel&&(us.length||it.status!=='ok');
-      h+=`<button class="it ${sel?'on':''} ${off?'off':''}" data-act="tog" data-id="${it.id}" aria-pressed="${sel}"><span class="cb"></span><span class="mid"><span class="t">${esc(it.name)}</span>${sub?`<span class="s">${sub}</span>`:''}</span></button>`;n++;
+      const off=isP&&!sel&&(fr<=0||it.status!=='ok');
+      h+=`<button class="it ${sel?'on':''} ${off?'off':''}" data-act="tog" data-id="${it.id}" aria-pressed="${sel}"><span class="cb">${sel&&Q>1?`<b>${n}</b>`:''}</span><span class="mid"><span class="t">${esc(it.name)}${Q>1?` <span class="qb">${sel?n+' di '+Q:'×'+Q}</span>`:''}</span>${sub?`<span class="s">${sub}</span>`:''}</span></button>`;nn++;
     }
     if(lastC!==null)h+='</div>';
     if(hid)h+=`<div class="empty" style="padding:20px">${hid} pezzi extra o vecchi nascosti · <button class="chip" style="display:inline-flex" data-act="extra">Mostrali</button></div>`;
-    return n?h:`<div class="empty"><b>Nessun pezzo</b>Cambia ricerca o filtri.</div>`+h;
+    return nn?h:`<div class="empty"><b>Nessun pezzo</b>Cambia ricerca o filtri.</div>`+h;
   }
 };
 
@@ -615,16 +642,17 @@ SCR.mag={
       if(m.cat&&it.cat!==m.cat)continue;
       if(q&&!(it.name+' '+(it.note||'')+' '+it.cat).toLowerCase().includes(q))continue;
       if(it.extra&&!S.showExtra&&!q){hid++;continue}
-      const us=usersOf(it.id,span,null),free=!us.length&&it.status==='ok';
+      const us=usersOf(it.id,span,null),Q=qty(it.id),fr=Math.max(0,Q-us.reduce((s2,u)=>s2+qn(u,it.id),0)),free=fr>0&&it.status==='ok';
       nAll++;if(free)nFree++;
       if(m.free&&!free)continue;
       if(it.cat!==lastC){if(lastC!==null)h+='</div>';h+=`<div class="cat"><span>${esc(it.cat)}</span></div><div class="list">`;lastC=it.cat}
       let sub,dot='';
       if(it.status!=='ok'){sub=`<span class="warn">${ST[it.status]}</span>`;dot=it.status}
+      else if(Q>1){sub=`<span class="${fr?'ok':'warn'}">${fr} liberi su ${Q}</span>`+(us.length?' · '+us.map(u=>`${esc(u.name)}${qn(u,it.id)>1?' ×'+qn(u,it.id):''}`).join(', '):'');dot=fr?'':'busy'}
       else if(us.length){sub=us.map(u=>`In ${esc(u.name)}`).join(', ');dot='busy'}
       else sub='<span class="ok">Libero</span>';
       if(it.note)sub+=' · '+esc(it.note);
-      h+=`<button class="it" data-act="item" data-id="${it.id}"><span class="dot ${dot}"></span><span class="mid"><span class="t">${esc(it.name)}</span><span class="s">${sub}</span></span></button>`;
+      h+=`<button class="it" data-act="item" data-id="${it.id}"><span class="dot ${dot}"></span><span class="mid"><span class="t">${esc(it.name)}${Q>1?` <span class="qb">×${Q}</span>`:''}</span><span class="s">${sub}</span></span></button>`;
     }
     if(lastC!==null)h+='</div>';
     const top=`<div class="sec" style="padding-top:6px">${nFree} liberi su ${nAll}${m.date===TODAY?' oggi':' il '+esc(fmtS.format(parse(m.date)))}</div>`;
@@ -641,7 +669,7 @@ SCR.kits={
   body(){
     const ks=kitsSorted();
     let h='<div class="sec">Kit pronti</div><div class="plist">';
-    h+=ks.map(k=>`<button class="pc" style="--pc:var(--accent)" data-go="kit" data-id="${k.id}"><span class="opt" style="padding:0;border:0;width:auto"><span class="kic">KIT</span></span><span class="mid"><span class="t">${esc(k.name)}</span>${k.note?`<span class="s">${esc(k.note)}</span>`:''}</span><span class="rt">${(k.items||[]).filter(i=>S.items.has(i)).length} pz</span></button>`).join('')||'<div class="empty"><b>Nessun kit</b>Tocca + per crearne uno.</div>';
+    h+=ks.map(k=>`<button class="pc" style="--pc:var(--accent)" data-go="kit" data-id="${k.id}"><span class="opt" style="padding:0;border:0;width:auto"><span class="kic">KIT</span></span><span class="mid"><span class="t">${esc(k.name)}</span>${k.note?`<span class="s">${esc(k.note)}</span>`:''}</span><span class="rt">${units(k)} pz</span></button>`).join('')||'<div class="empty"><b>Nessun kit</b>Tocca + per crearne uno.</div>';
     h+='</div><div class="sec">Accessori automatici</div><div class="plist">';
     h+=rulesSorted().map(r=>`<div class="pc" style="--pc:var(--line)"><span class="mid"><span class="t">${esc(r.name)}</span><span class="s">${(r.groups||[]).map(g=>esc(g.label)+(g.n>1?' ×'+g.n:'')).join(' · ')}</span></span></div>`).join('');
     return h+`</div><div class="empty" style="padding:16px 24px">Le regole degli accessori si modificano dall'app sul computer.</div>`;
@@ -655,13 +683,13 @@ SCR.kit={
     const k=S.kits.get(r.id);
     if(!k)return '<div class="empty"><b>Kit non trovato</b></div>';
     const ids=(k.items||[]).filter(i=>S.items.has(i)),set=new Set(ids);
-    let h=`<div class="hero" style="--pc:var(--accent)"><h2>${esc(k.name)}</h2>${k.note?`<div class="when">${esc(k.note)}</div>`:''}<div class="stats"><span class="stat"><b>${ids.length}</b> pezzi</span></div></div>`;
+    let h=`<div class="hero" style="--pc:var(--accent)"><h2>${esc(k.name)}</h2>${k.note?`<div class="when">${esc(k.note)}</div>`:''}<div class="stats"><span class="stat"><b>${units(k)}</b> pezzi</span></div></div>`;
     if(!ids.length)return h+'<div class="empty"><b>Kit vuoto</b>Tocca “Aggiungi pezzi”.</div>';
     let lastC=null;
     for(const it of itemsSorted()){
       if(!set.has(it.id))continue;
       if(it.cat!==lastC){if(lastC!==null)h+='</div>';h+=`<div class="cat"><span>${esc(it.cat)}</span></div><div class="list">`;lastC=it.cat}
-      h+=`<div class="it"><span class="mid" data-act="item" data-id="${it.id}"><span class="t">${esc(it.name)}</span>${it.note?`<span class="s">${esc(it.note)}</span>`:''}</span><button class="rm" data-act="rmKitItem" data-id="${it.id}" aria-label="Togli ${esc(it.name)}">${IC.x}</button></div>`;
+      h+=`<div class="it"><span class="mid" data-act="${qty(it.id)>1?'qtyK':'item'}" data-id="${it.id}"><span class="t">${esc(it.name)}${qty(it.id)>1?` <span class="qb">×${qn(k,it.id)}</span>`:''}</span>${it.note?`<span class="s">${esc(it.note)}</span>`:''}</span><button class="rm" data-act="rmKitItem" data-id="${it.id}" aria-label="Togli ${esc(it.name)}">${IC.x}</button></div>`;
     }
     return h+'</div>';
   }
@@ -679,8 +707,8 @@ function renderSheet(){
 const SHEETS={
   kitApply(sh){
     const p=S.prods.get(sh.id);
-    return `<h3>Applica kit</h3><div class="sub">I pezzi occupati vengono sostituiti con un gemello libero${S.autoOn?'; schede e batterie si aggiungono da sole':''}.</div>`+
-      (kitsSorted().map(k=>`<button class="opt" data-act="doKit" data-id="${k.id}"><span class="kic">KIT</span><span class="mid"><span class="t">${esc(k.name)}</span><span class="s">${(k.items||[]).length} pezzi${k.note?' · '+esc(k.note):''}</span></span></button>`).join('')||'<div class="empty">Nessun kit.</div>');
+    return `<h3>Applica kit</h3><div class="sub">Prende le unità libere in quelle date${S.autoOn?'; schede e batterie si aggiungono da sole':''}.</div>`+
+      (kitsSorted().map(k=>`<button class="opt" data-act="doKit" data-id="${k.id}"><span class="kic">KIT</span><span class="mid"><span class="t">${esc(k.name)}</span><span class="s">${units(k)} pezzi${k.note?' · '+esc(k.note):''}</span></span></button>`).join('')||'<div class="empty">Nessun kit.</div>');
   },
   prod(sh){
     const p=sh.id?S.prods.get(sh.id):null;
@@ -697,16 +725,30 @@ const SHEETS={
     const it=S.items.get(sh.id);if(!it)return '<div class="empty">Pezzo non trovato.</div>';
     const fut=prodsSorted().filter(p=>p.end>=TODAY&&(p.items||[]).includes(it.id));
     return `<h3>${esc(it.name)}</h3><div class="sub">${esc(it.cat)}</div>
+    <div class="sw" style="border-top:0;padding-top:0"><span>Quantità in magazzino<small>Quanti pezzi uguali avete</small></span><span class="stepper"><button class="ib" data-act="itQty" data-id="${it.id}" data-d="-1" aria-label="Meno">−</button><b>${qty(it.id)}</b><button class="ib" data-act="itQty" data-id="${it.id}" data-d="1" aria-label="Più">+</button></span></div>
     <div class="fld"><span>Stato</span></div><div class="segs">${Object.keys(ST).map(k=>`<button data-act="itStatus" data-id="${it.id}" data-v="${k}" aria-pressed="${it.status===k}">${ST[k]}</button>`).join('')}</div>
     <label class="fld"><span>Note</span><input id="itNote" value="${esc(it.note||'')}" placeholder="Es. manca il paraluce" data-id="${it.id}"></label>
     <div class="sw"><span>Extra / vecchio<small>Nascosto nelle liste se non lo cerchi</small></span><button class="tg" role="switch" aria-checked="${!!it.extra}" data-act="itExtra" data-id="${it.id}"></button></div>
     <div class="fld" style="margin-top:8px"><span>Prossimi utilizzi</span></div>
-    <div class="uses">${fut.length?fut.map(p=>`<div style="--pc:${pc(p)}"><i></i><span class="mid"><span class="t" style="font-size:15px">${esc(p.name)}</span><span class="s">${esc(range(p))}</span></span></div>`).join(''):'<div style="color:var(--muted)">Nessuna produzione in programma.</div>'}</div>`;
+    <div class="uses">${fut.length?fut.map(p=>`<div style="--pc:${pc(p)}"><i></i><span class="mid"><span class="t" style="font-size:15px">${esc(p.name)}${qn(p,it.id)>1?' ×'+qn(p,it.id):''}</span><span class="s">${esc(range(p))}</span></span></div>`).join(''):'<div style="color:var(--muted)">Nessuna produzione in programma.</div>'}</div>`;
+  },
+  qty(sh){
+    const o=sh.mode==='prod'?S.prods.get(sh.oid):S.kits.get(sh.oid);const Q=qty(sh.id);if(!o)return '';
+    if(S.qv==null||S.qvFor!==sh.oid+sh.id){S.qvFor=sh.oid+sh.id;S.qv=qn(o,sh.id)||1}
+    const fr=sh.mode==='prod'?Math.max(0,freeOf(sh.id,o)):Q;
+    const others=sh.mode==='prod'?usersOf(sh.id,o,o.id).map(u=>esc(u.name)+(qn(u,sh.id)>1?' ×'+qn(u,sh.id):'')).join(', '):'';
+    const cur=qn(o,sh.id);
+    return `<h3>${sh.mode==='prod'?'Quante ne servono?':'Quante nel kit?'}</h3><div class="sub">${esc(iname(sh.id))}<br>${sh.mode==='prod'?`${fr} liberi su ${Q} in queste date${others?' · già in: '+others:''}`:`Il magazzino ne ha ${Q}`}</div>
+    <div class="qstep"><button class="ib big" data-act="qv" data-d="-1" aria-label="Meno">−</button><b id="qvNum">${S.qv}</b><button class="ib big" data-act="qv" data-d="1" aria-label="Più">+</button><span>di ${Q}</span></div>
+    <div class="err" id="qvWarn" style="min-height:1.2em">${sh.mode==='prod'&&S.qv>fr?`Ne restano liberi solo ${fr}: gli altri andranno in conflitto.`:''}</div>
+    <button class="btn primary" style="width:100%" data-act="qvOk">${cur?'Aggiorna':'Aggiungi'}</button>
+    ${cur?`<div class="row-btns"><button class="btn danger" data-act="qvDel">Togli</button></div>`:''}`;
   },
   newItem(){
     return `<h3>Nuovo pezzo</h3>
-    <label class="fld"><span>Nome</span><input id="niName" placeholder="Es. AMARAN 200X (2)" autocomplete="off"></label>
+    <label class="fld"><span>Nome</span><input id="niName" placeholder="Es. AMARAN 200X" autocomplete="off"></label>
     <label class="fld"><span>Categoria</span><select id="niCat">${cats().map(c=>`<option>${esc(c)}</option>`).join('')}</select></label>
+    <label class="fld"><span>Quantità</span><input id="niQty" type="number" min="1" max="99" value="1" inputmode="numeric"></label>
     <label class="fld"><span>Note</span><input id="niNote"></label>
     <button class="btn primary" style="width:100%" data-act="saveNewItem">Aggiungi al magazzino</button>`;
   },
@@ -747,10 +789,10 @@ const ACT={
   editProd:()=>openSheet({t:'prod',id:R().id}),
   kitApply:()=>openSheet({t:'kitApply',id:R().id}),
   doKit:b=>{const p=S.prods.get(R().id);closeSheet();applyKit(p,b.dataset.id)},
-  fill:()=>{const p=S.prods.get(R().id);if(!p)return;const set=new Set(p.items||[]);const f=fillAccessories(p,set);commitAuto(p,set,f.added,{title:'Completa accessori',missing:f.missing})},
-  undoAuto:()=>{const a=S.lastAuto,p=a&&S.prods.get(a.pid);if(!p)return;p.items=p.items.filter(x=>!a.ids.includes(x));S.lastAuto=null;saveItems(p);refresh()},
+  fill:()=>{const p=S.prods.get(R().id);if(!p)return;const cnt=cntOf(p);const f=fillAccessories(p,cnt);commitAuto(p,cnt,f.added,{title:'Completa accessori',missing:f.missing})},
+  undoAuto:()=>{const a=S.lastAuto,p=a&&S.prods.get(a.pid);if(!p)return;const c=cntOf(p);a.ids.forEach(i=>c.set(i,(c.get(i)||0)-1));setCnt(p,c);S.lastAuto=null;saveItems(p);refresh()},
   closeAuto:()=>{S.lastAuto=null;refresh()},
-  rmItem:b=>{const p=S.prods.get(R().id);if(!p)return;const id=b.dataset.id;p.items=p.items.filter(x=>x!==id);saveItems(p);refresh();snack('Tolto: '+iname(id),'Annulla',()=>{if(!p.items.includes(id)){p.items.push(id);saveItems(p);refresh()}})},
+  rmItem:b=>{const p=S.prods.get(R().id);if(!p)return;const id=b.dataset.id,was=qn(p,id);const c=cntOf(p);c.set(id,0);setCnt(p,c);saveItems(p);refresh();snack('Tolto: '+iname(id)+(was>1?' ×'+was:''),'Annulla',()=>{const c2=cntOf(p);c2.set(id,was);setCnt(p,c2);saveItems(p);refresh()})},
   pick:()=>{const r=R();S.pk={q:'',cat:'',free:false,on:false};go({v:'pick',mode:r.v==='kit'?'kit':'prod',id:r.id})},
   pkf:b=>{S.pk[b.dataset.f]=!S.pk[b.dataset.f];b.setAttribute('aria-pressed',S.pk[b.dataset.f]);renderBody()},
   pkcat:b=>{S.pk.cat=b.dataset.c;b.parentNode.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b));renderBody();window.scrollTo(0,0)},
@@ -758,8 +800,16 @@ const ACT={
   tog:b=>{
     const r=R(),id=b.dataset.id;
     if(r.mode==='prod'){const p=S.prods.get(r.id);if(p)toggleProdItem(p,id)}
-    else{const k=S.kits.get(r.id);if(!k)return;k.items=k.items.includes(id)?k.items.filter(x=>x!==id):[...k.items,id];const latest=[...k.items];write('kits/'+k.id,'update',{items:latest});refresh()}
+    else{const k=S.kits.get(r.id);if(!k)return;if(qty(id)>1){S.qv=null;openSheet({t:'qty',mode:'kit',oid:k.id,id});return}setKitQty(k,id,qn(k,id)?0:1)}
   },
+  qtyP:b=>{S.qv=null;openSheet({t:'qty',mode:'prod',oid:R().id,id:b.dataset.id})},
+  qtyK:b=>{S.qv=null;openSheet({t:'qty',mode:'kit',oid:R().id,id:b.dataset.id})},
+  qv:b=>{const sh=R().sheet;if(!sh)return;S.qv=Math.max(1,Math.min(qty(sh.id),(S.qv||1)+(+b.dataset.d)));renderSheet()},
+  qvOk:()=>{const sh=R().sheet;if(!sh)return;const n=S.qv||1;S.qv=null;closeSheet();
+    if(sh.mode==='prod'){const p=S.prods.get(sh.oid);if(p)setProdQty(p,sh.id,n)}else{const k=S.kits.get(sh.oid);if(k)setKitQty(k,sh.id,n)}},
+  qvDel:()=>{const sh=R().sheet;if(!sh)return;S.qv=null;closeSheet();
+    if(sh.mode==='prod'){const p=S.prods.get(sh.oid);if(p)setProdQty(p,sh.id,0)}else{const k=S.kits.get(sh.oid);if(k)setKitQty(k,sh.id,0)}},
+  itQty:b=>{const it=S.items.get(b.dataset.id);if(!it)return;const v=Math.max(1,Math.min(99,qty(it.id)+(+b.dataset.d)));if(v===qty(it.id))return;it.qty=v;write('items/'+it.id,'update',{qty:v});renderSheet();renderBody()},
   magFree:b=>{S.mag.free=!S.mag.free;b.setAttribute('aria-pressed',S.mag.free);renderBody()},
   magcat:b=>{S.mag.cat=b.dataset.c;b.parentNode.querySelectorAll('.chip[data-act=magcat]').forEach(c=>c.setAttribute('aria-pressed',c===b));renderBody();window.scrollTo(0,0)},
   item:b=>openSheet({t:'item',id:b.dataset.id,live:true}),
@@ -769,7 +819,7 @@ const ACT={
   saveNewItem:()=>{
     const name=$('#niName').value.trim(),cat=$('#niCat').value;if(!name){$('#niName').focus();return}
     const same=itemsSorted().filter(i=>i.cat===cat);const order=same.length?(same[same.length-1].order??9999)+0.01:9999;
-    const it={id:rid('i'),name,cat,note:$('#niNote').value.trim(),status:'ok',extra:false,order:Math.round(order*1000)/1000};
+    const it={id:rid('i'),name,cat,note:$('#niNote').value.trim(),status:'ok',extra:false,order:Math.round(order*1000)/1000,qty:Math.max(1,parseInt($('#niQty').value)||1)};
     S.items.set(it.id,it);const {id,...d}=it;write('items/'+id,'set',d);closeSheet();refresh();snack('Aggiunto: '+name);
   },
   saveProd:b=>{
@@ -781,8 +831,8 @@ const ACT={
     else{const nid=rid('p');const p={id:nid,name,start,end,color,notes,items:[]};S.prods.set(nid,p);write('prods/'+nid,'set',{name,start,end,color,notes,items:[]});
       history.back();setTimeout(()=>go({v:'prod',id:nid}),60)}
   },
-  dupProd:b=>{const p=S.prods.get(b.dataset.id);if(!p)return;const nid=rid('p');const d={name:p.name+' (copia)',start:p.start,end:p.end,color:p.color,notes:p.notes||'',items:[...(p.items||[])]};
-    S.prods.set(nid,{id:nid,...d});write('prods/'+nid,'set',d);history.back();setTimeout(()=>go({v:'prod',id:nid},true),60);snack('Duplicata')},
+  dupProd:b=>{const p=S.prods.get(b.dataset.id);if(!p)return;const nid=rid('p');const d={name:p.name+' (copia)',start:p.start,end:p.end,color:p.color,notes:p.notes||'',items:pack(p)};
+    S.prods.set(nid,unpack({id:nid,...d}));write('prods/'+nid,'set',d);history.back();setTimeout(()=>go({v:'prod',id:nid},true),60);snack('Duplicata')},
   delProd:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'dp','Tocca di nuovo per eliminare',()=>{const id=b.dataset.id;S.prods.delete(id);write('prods/'+id,'delete');history.go(-2)})},
   newKit:()=>openSheet({t:'kitEdit'}),
   editKit:()=>openSheet({t:'kitEdit',id:R().id}),
@@ -790,7 +840,7 @@ const ACT={
     if(id){const k=S.kits.get(id);if(!k)return;Object.assign(k,{name,note});write('kits/'+id,'update',{name,note});closeSheet();refresh()}
     else{const nid=rid('k');S.kits.set(nid,{id:nid,name,note,items:[]});write('kits/'+nid,'set',{name,note,items:[]});history.back();setTimeout(()=>go({v:'kit',id:nid}),60)}},
   delKit:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'dk','Tocca di nuovo per eliminare',()=>{const id=b.dataset.id;S.kits.delete(id);write('kits/'+id,'delete');history.go(-2)})},
-  rmKitItem:b=>{const k=S.kits.get(R().id);if(!k)return;const id=b.dataset.id;k.items=k.items.filter(x=>x!==id);write('kits/'+k.id,'update',{items:[...k.items]});refresh()},
+  rmKitItem:b=>{const k=S.kits.get(R().id);if(!k)return;setKitQty(k,b.dataset.id,0)},
   iosHint:()=>{closeSheet();setTimeout(()=>openSheet({t:'iosHint'}),80)},
   hintDone:()=>{LS.set('rf-ios-hint',true);closeSheet()},
   autoOn:b=>{S.autoOn=!S.autoOn;LS.set('rf-auto',S.autoOn);b.setAttribute('aria-checked',S.autoOn)},
@@ -892,7 +942,7 @@ async function connect(url,token){
   if(!/^https:\/\/script\.google\.com\//.test(url)||!/^[0-9a-f]{64}$/.test(token)){showSetup('Link di accesso non valido.');return}
   CFG={url,token};expiredShown=false;
   const b=$('#suGo');if(b){b.disabled=true;b.textContent='Collegamento…'}
-  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;S.me=r.me||'';LS.set('rf-me',S.me);ingest(r.data);cacheSave();start();if(S.me)snack('Ciao '+S.me.split('@')[0].split(/[._-]/)[0].replace(/^./,c=>c.toUpperCase())+'!')}
+  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;S.me=r.me||'';LS.set('rf-me',S.me);ingest(r.data);cacheSave();start();if(S.me)snack('Ciao '+(S.me.split('@')[0].split(/[._-]/).find(w=>w.length>1)||S.me).replace(/^./,c=>c.toUpperCase())+'!')}
   catch(e){if(!/Accesso/.test(e.message)){CFG=null;showSetup('Non riesco a raggiungere l\'archivio. Riprova tra poco.')}}
 }
 function start(){
