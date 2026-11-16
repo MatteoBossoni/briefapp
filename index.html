@@ -569,7 +569,10 @@ window.addEventListener('online',()=>CFG&&loadData());
 const rid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 /* ---------- navigation (Android back closes sheets and screens) ---------- */
-const R=()=>history.state||{v:'home'};
+/* versione semplice per i colleghi: Home e Team nascoste (il codice resta, basta mettere LITE=false) */
+const LITE=true,LITE_OFF=['home','todos','team','person'];
+const HOME=LITE?'prods':'home';
+const R=()=>{const r=history.state;return !r||(LITE&&LITE_OFF.includes(r.v))?{v:HOME}:r};
 const TOP=['home','prods','mag','kits','inv','team','docs'];
 const TABOF=v=>['mag','kits','inv'].includes(v)?'att':v;
 function go(route,replace){
@@ -1359,7 +1362,8 @@ async function connect(url,token){
 }
 function start(){
   $('#setup').hidden=true;$('#app').hidden=false;
-  if(!history.state)history.replaceState({v:'home'},'');
+  if(!history.state||(LITE&&LITE_OFF.includes(history.state.v)))history.replaceState({v:HOME},'');
+  if(LITE)document.querySelectorAll('#tabs button').forEach(b=>{if(['home','team'].includes(b.dataset.tab))b.remove()});
   show(true);setSync();
 }
 
