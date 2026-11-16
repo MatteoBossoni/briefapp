@@ -440,6 +440,8 @@ const overlap=(a,b)=>a.start<=b.end&&b.start<=a.end;
 const pc=p=>`var(--p${(p.color??0)%PAL})`;
 
 /* ---------- derived ---------- */
+function orderEndOf(cat,skip){const l=itemsSorted().filter(i=>i.id!==skip);let k=-1;l.forEach((i,j)=>{if(i.cat===cat)k=j});
+  if(k<0)return (l.length?(l[l.length-1].order??0):0)+1;const a=l[k].order??0,n=l[k+1];return n&&n.order!=null&&n.order>a?(a+n.order)/2:a+1}
 const itemsSorted=()=>[...S.items.values()].sort((a,b)=>(a.order??1e9)-(b.order??1e9)||a.name.localeCompare(b.name));
 function cats(){const c=[];for(const i of itemsSorted()) if(!c.includes(i.cat)) c.push(i.cat);return c}
 const prodsSorted=()=>[...S.prods.values()].sort((a,b)=>a.start.localeCompare(b.start)||a.name.localeCompare(b.name));
@@ -909,7 +911,7 @@ const ACT={
   newItem:()=>openSheet({t:'newItem'}),
   saveNewItem:()=>{
     const name=$('#niName').value.trim(),cat=$('#niCat').value;if(!name){$('#niName').focus();return}
-    const same=itemsSorted().filter(i=>i.cat===cat);const order=same.length?(same[same.length-1].order??9999)+0.01:9999;
+    const order=orderEndOf(cat);
     const it={id:rid('i'),name,cat,note:$('#niNote').value.trim(),status:'ok',extra:false,order:Math.round(order*1000)/1000,qty:Math.max(1,parseInt($('#niQty').value)||1)};
     S.items.set(it.id,it);const {id,...d}=it;write('items/'+id,'set',d);closeSheet();refresh();snack('Aggiunto: '+name);
   },
