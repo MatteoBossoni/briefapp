@@ -572,7 +572,7 @@ const rid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 /* ---------- navigation (Android back closes sheets and screens) ---------- */
 /* versione semplice per i colleghi: Home e Team nascoste (il codice resta, basta mettere LITE=false) */
-const LITE=true,LITE_OFF=['home','todos','team','person'];
+const LITE=false,LITE_OFF=['home','todos','team','person'];
 const HOME=LITE?'prods':'home';
 const R=()=>{const r=history.state;return !r||(LITE&&LITE_OFF.includes(r.v))?{v:HOME}:r};
 const TOP=['home','prods','mag','kits','inv','team','docs'];
@@ -1107,14 +1107,18 @@ function dayEvents(d,filter){
   for(const e of (S.cal&&S.cal.events)||[]){
     const s=e.s.slice(0,10),en=e.e.slice(0,10);if(s>d||en<d)continue;
     const all=e.all||s<d;
-    ev.push({t:e.t,kind:'cal',a:all?'':e.s.slice(11,16),b:all||en>d?'':e.e.slice(11,16),all,loc:e.loc});
+    const kind=e.src==='riprese'?'set':e.src==='post'?'post':'cal';
+    const t=String(e.t).replace(/^⚠️\s*/,'');
+    if(kind==='cal'&&ev.some(x=>x.src&&x.t.toLowerCase()===t.toLowerCase()))continue;   // stesso evento già nel calendario agenzia
+    if(e.src){const i=ev.findIndex(x=>x.kind==='cal'&&x.t.toLowerCase()===t.toLowerCase());if(i>=0)ev.splice(i,1)}
+    ev.push({t,kind,src:e.src||'',a:all?'':e.s.slice(11,16),b:all||en>d?'':e.e.slice(11,16),all,loc:e.loc,warn:/^⚠️/.test(e.t),prod:e.prod||''});
   }
   const me=myPerson();
   if(me)for(const x of me.items||[]){
     if(x.from>d||x.to<d)continue;
     const k=key3(x.t);
-    const m=k&&ev.find(e=>e.kind==='cal'&&!e.fl&&(key3(e.t)===k||e.t.toLowerCase().includes(k)));
-    if(m){m.fl=x.t;if(x.kind!=='altro')m.kind=x.kind}
+    const m=k&&ev.find(e=>(e.kind==='cal'||e.src)&&!e.fl&&(key3(e.t)===k||e.t.toLowerCase().includes(k)));
+    if(m){m.fl=x.t;if(x.kind!=='altro'&&!m.src)m.kind=x.kind}
     else ev.push({t:x.t,kind:x.kind,a:'',b:'',all:true,fl:x.t});
   }
   ev.sort((x,y)=>(x.a||'').localeCompare(y.a||''));
