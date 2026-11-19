@@ -368,6 +368,17 @@ body{font-size:15px}
 .tm-calbox small{color:var(--muted);font-size:12px}
 .tm-calbox .kd{flex:none}
 .bar .ib + .ib{margin-left:-6px}
+
+/* progetti */
+.ty{display:inline-block;font-family:var(--f-display);font-size:13px;letter-spacing:.05em;padding:1px 6px 0;color:#000;transform:skewX(-12deg);vertical-align:1px;font-weight:400}
+.ty.pre{background:#8a8a86;color:#fff}.ty.riprese{background:var(--brand)}.ty.montaggio{background:#7d95ff}.ty.color{background:#c18cf2}.ty.grafica{background:#ff8a6e}.ty.revisioni{background:#f2a7c9}.ty.consegna{background:#4cc184}.ty.flussi{background:transparent;border:1px dashed var(--muted);color:var(--muted)}
+.st{font-size:12px;font-weight:600;padding:2px 8px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.st.confermato{background:#4cc184;border-color:#4cc184;color:#000}.st.opzionato{background:#e8a93b;border-color:#e8a93b;color:#000}.st.richiesta{border-style:dashed}.st.post{background:#7d95ff;border-color:#7d95ff;color:#000}.st.consegnato,.st.chiuso{opacity:.6}
+.it.done .t{text-decoration:line-through;color:var(--muted)}
+.it .cb.on{background:var(--brand);border-color:var(--brand)}
+.it .cb.on::after{content:"";width:10px;height:6px;border:solid #000;border-width:0 0 2.5px 2.5px;transform:rotate(-45deg) translate(1px,-1px)}
+.lnk{color:inherit;text-align:left;padding:0;font:inherit}
+.chips.wrap{overflow:visible}
 </style>
 </head>
 <body>
@@ -385,10 +396,10 @@ body{font-size:15px}
   <button class="fab" id="fab" hidden></button>
   <nav class="tabs" id="tabs">
     <button data-tab="home"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/></svg></span>Home</button>
-    <button data-tab="prods"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>Produzioni</button>
+    <button data-tab="projs"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M7 13h4M7 16h8"/></svg></span>Progetti</button>
+    <button data-tab="prods"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="14" height="11" rx="2"/><path d="M16 11l5-3v9l-5-3"/></svg></span>Riprese</button>
     <button data-tab="att"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>Attrezzatura</button>
     <button data-tab="team"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/></svg></span>Team</button>
-    <button data-tab="docs"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg></span>Documenti</button>
   </nav>
 </div>
 <div id="setup" hidden></div>
@@ -545,7 +556,7 @@ function write(path,op,data){
   inflight++;setSync();
   const next=prev.then(()=>op==='delete'?api('deleteDoc',kind,id):api('saveDoc',kind,id,JSON.stringify(data),op==='set'))
     .then(st=>{if(st)stamp=st;offline=false})
-    .catch(e=>{offline=!navigator.onLine;snack(/Accesso/.test(e.message)?'Accesso scaduto: entra di nuovo con Google':'Non salvato. Controlla la connessione e riprova.');})
+    .catch(e=>{offline=!navigator.onLine;snack(/permess/i.test(e.message)?e.message:/Accesso/.test(e.message)?'Accesso scaduto: entra di nuovo con Google':'Non salvato. Controlla la connessione e riprova.');})
     .finally(()=>{inflight--;setSync();clearTimeout(reloadT);reloadT=setTimeout(loadData,800);if(queues.get(path)===next)queues.delete(path)});
   queues.set(path,next);return next;
 }
@@ -554,16 +565,17 @@ function ingest(d){
   S.prods=new Map(d.prods.map(x=>[x.id,unpack(x)]));
   S.kits=new Map(d.kits.map(x=>[x.id,unpack(x)]));
   S.rules=new Map(d.rules.map(x=>[x.id,{...x,cams:[...(x.cams||[])],groups:(x.groups||[]).map(g=>({...g,cands:[...(g.cands||[])]}))}]));
+  S.projects=new Map((d.projects||[]).map(x=>[x.id,x]));S.phases=new Map((d.phases||[]).map(x=>[x.id,x]));
   S.loaded=true;
 }
-function cacheSave(){LS.set('rf-cache',{items:[...S.items.values()],prods:[...S.prods.values()],kits:[...S.kits.values()],rules:[...S.rules.values()]})}
+function cacheSave(){LS.set('rf-cache',{items:[...S.items.values()],prods:[...S.prods.values()],kits:[...S.kits.values()],rules:[...S.rules.values()],projects:[...S.projects.values()],phases:[...S.phases.values()],users:S.users,role:S.role})}
 async function loadData(){
   if(inflight>0){clearTimeout(reloadT);reloadT=setTimeout(loadData,800);return}
   let r;
   try{r=await api('getData');offline=false}
   catch(e){offline=true;setSync();if(!S.loaded)refresh();return}
   if(inflight>0){reloadT=setTimeout(loadData,800);return}
-  stamp=r.stamp;if(r.me){S.me=r.me;LS.set('rf-me',r.me)}ingest(r.data);cacheSave();setSync();refresh();
+  stamp=r.stamp;if(r.me){S.me=r.me;LS.set('rf-me',r.me)}S.users=r.users||[];S.role=r.role||'admin';ingest(r.data);cacheSave();setSync();refresh();
 }
 setInterval(async()=>{if(!CFG||document.hidden||inflight>0)return;try{const st=await api('getStamp');offline=false;if(st!==stamp)loadData()}catch(_){offline=true}setSync()},15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CFG){TODAY=iso(new Date());loadData()}});
@@ -575,8 +587,8 @@ const rid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const LITE=false,LITE_OFF=['home','todos','team','person'];
 const HOME=LITE?'prods':'home';
 const R=()=>{const r=history.state;return !r||(LITE&&LITE_OFF.includes(r.v))?{v:HOME}:r};
-const TOP=['home','prods','mag','kits','inv','team','docs'];
-const TABOF=v=>['mag','kits','inv'].includes(v)?'att':v;
+const TOP=['home','projs','prods','mag','kits','inv','team','docs'];
+const TABOF=v=>['mag','kits','inv'].includes(v)?'att':v==='docs'?'home':v;
 function go(route,replace){
   const cur=R();const sy=window.scrollY;
   history.replaceState({...cur,sy},'');
@@ -622,7 +634,7 @@ SCR.prods={
   title:()=>'<svg class="mono-b" viewBox="0 0 34 64" aria-hidden="true"><path d="M11.2,30.7l20.9-12.1L0,0.1v24.1v13v26.3l34-19.6L11.2,30.7z M3.8,6.5l21,12.1L7.6,28.5l-3.8-2.2V6.5z M3.8,35l3.7-2.1l19,11l-22.7,13V35L3.8,35z"/></svg><span>Brief<b class="app">App</b></span>',
   acts:()=>`<button class="ib" data-act="settings" aria-label="Impostazioni">${IC.gear}</button>`,
   head:()=>`<div class="seg" role="group"><button data-act="pseg" data-v="up" aria-pressed="${S.pseg==='up'}">In arrivo</button><button data-act="pseg" data-v="past" aria-pressed="${S.pseg==='past'}">Concluse</button></div>`,
-  fab:()=>({html:IC.plus,act:'newProd'}),
+  fab:()=>can('prods','new')?({html:IC.plus,act:'newProd'}):null,
   body(){
     const all=prodsSorted();
     const ps=S.pseg==='up'?all.filter(p=>p.end>=TODAY):all.filter(p=>p.end<TODAY).reverse();
@@ -645,8 +657,8 @@ SCR.prods={
 /* Dettaglio produzione */
 SCR.prod={
   title:()=>'Produzione',
-  acts:r=>S.prods.has(r.id)?`<button class="ib" data-act="editProd" aria-label="Modifica">${IC.edit}</button>`:'',
-  fab:()=>({html:IC.plus+'Aggiungi attrezzatura',act:'pick',wide:true}),
+  acts:r=>S.prods.has(r.id)&&can('prods','edit')?`<button class="ib" data-act="editProd" aria-label="Modifica">${IC.edit}</button>`:'',
+  fab:()=>can('prods','items')?({html:IC.plus+'Aggiungi attrezzatura',act:'pick',wide:true}):null,
   body(r){
     const p=S.prods.get(r.id);
     if(!p)return '<div class="empty"><b>Produzione non trovata</b>Forse è stata eliminata.</div>';
@@ -654,8 +666,9 @@ SCR.prod={
     const nC=clashes(p),nU=units(p);
     let h=`<div class="hero" style="--pc:${pc(p)}"><h2>${esc(p.name)}</h2><div class="when">${esc(range(p))}${days(p)>1?` · ${days(p)} giorni`:''}</div>
       ${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}
+      <div class="notes">${p.project&&S.projects.has(p.project)?`<button class="lnk" data-go="proj" data-id="${p.project}">Progetto: <b>${esc(S.projects.get(p.project).name)}</b> →</button><br>`:''}Crew: ${(p.crew||[]).length?esc(p.crew.join(', ')):'<span style="color:var(--muted)">nessuno</span>'}</div>
       <div class="stats"><span class="stat"><b>${nU}</b> pezzi</span>${nC?`<span class="stat bad"><b>${nC}</b> in conflitto</span>`:'<span class="stat">Nessun conflitto</span>'}</div></div>
-      <div class="acts"><button class="btn" data-act="kitApply">${IC.kit}Applica kit</button><button class="btn" data-act="fill">${IC.bolt}Completa accessori</button></div>`;
+      <div class="acts">${S.role!=='ospite'?`<button class="btn" data-act="crew" data-id="${p.id}">Crew</button><button class="btn" data-act="kitApply">${IC.kit}Kit</button><button class="btn" data-act="fill">${IC.bolt}Accessori</button>`:''}</div>`;
     const a=S.lastAuto;
     if(a&&a.pid===p.id){
       const sm=summarize(a.ids);
@@ -727,7 +740,7 @@ SCR.mag={
   head:()=>{const m=S.mag;return `<div class="datebox">Disponibilità il<input type="date" id="magDate" value="${m.date}"></div>
     <label class="search">${IC.search}<input type="search" id="magQ" placeholder="Cerca nel magazzino" value="${esc(m.q)}" autocomplete="off"></label>
     <div class="chips"><button class="chip f" data-act="magFree" aria-pressed="${m.free}">Solo liberi</button><button class="chip f" data-act="extra" aria-pressed="${S.showExtra}">Extra</button><button class="chip" data-act="magcat" data-c="" aria-pressed="${!m.cat}">Tutte</button>${cats().map(c=>`<button class="chip" data-act="magcat" data-c="${esc(c)}" aria-pressed="${m.cat===c}">${esc(c.toLowerCase())}</button>`).join('')}</div>`},
-  fab:()=>({html:IC.plus,act:'newItem'}),
+  fab:()=>can('items','new')?({html:IC.plus,act:'newItem'}):null,
   body(){
     const m=S.mag,q=m.q.trim().toLowerCase(),span={start:m.date,end:m.date};
     let h='',lastC=null,hid=0,nFree=0,nAll=0;
@@ -758,7 +771,7 @@ SCR.mag={
 SCR.kits={
   title:()=>'Kit',
   acts:()=>`<button class="ib" data-act="settings" aria-label="Impostazioni">${IC.gear}</button>`,
-  fab:()=>({html:IC.plus,act:'newKit'}),
+  fab:()=>can('kits','new')?({html:IC.plus,act:'newKit'}):null,
   body(){
     const ks=kitsSorted();
     let h='<div class="sec">Kit pronti</div><div class="plist">';
@@ -805,13 +818,14 @@ const SHEETS={
   },
   prod(sh){
     const p=sh.id?S.prods.get(sh.id):null;
-    const v=p||{name:'',start:TODAY,end:TODAY,color:Math.floor(Math.random()*PAL),notes:''};
+    const pj=sh.pj?S.projects.get(sh.pj):null;
+    const v=p||{name:pj?pj.name:'',start:TODAY,end:TODAY,color:pj?(Number(pj.color)||0)%PAL:Math.floor(Math.random()*PAL),notes:''};
     return `<h3>${p?'Modifica produzione':'Nuova produzione'}</h3>
     <label class="fld"><span>Nome</span><input id="fName" value="${esc(v.name)}" placeholder="Cliente – cosa" autocomplete="off"></label>
     <div class="two"><label class="fld"><span>Dal</span><input type="date" id="fStart" value="${v.start}"></label><label class="fld"><span>Al</span><input type="date" id="fEnd" value="${v.end}"></label></div>
     <div class="fld"><span>Colore</span><div class="colors" id="fColor">${Array.from({length:PAL},(_,k)=>`<button type="button" style="--c:var(--p${k})" data-c="${k}" aria-pressed="${(v.color??0)%PAL===k}" aria-label="Colore ${k+1}"></button>`).join('')}</div></div>
     <label class="fld"><span>Note</span><textarea id="fNotes" placeholder="Location, operatore, ritiro e riconsegna…">${esc(v.notes||'')}</textarea></label>
-    <button class="btn primary" style="width:100%" data-act="saveProd" data-id="${p?p.id:''}">${p?'Salva':'Crea produzione'}</button>
+    <button class="btn primary" style="width:100%" data-act="saveProd" data-id="${p?p.id:''}" data-pj="${pj?pj.id:''}">${p?'Salva':'Crea produzione'}</button>
     ${p?`<div class="row-btns"><button class="btn" data-act="dupProd" data-id="${p.id}">Duplica</button><button class="btn danger" data-act="delProd" data-id="${p.id}">Elimina</button></div>`:''}`;
   },
   item(sh){
@@ -921,7 +935,7 @@ const ACT={
     const color=+($('#fColor [aria-pressed=true]')?.dataset.c||0),notes=$('#fNotes').value;
     const id=b.dataset.id;
     if(id){const p=S.prods.get(id);if(!p)return;Object.assign(p,{name,start,end,color,notes});write('prods/'+id,'update',{name,start,end,color,notes});closeSheet();refresh()}
-    else{const nid=rid('p');const p={id:nid,name,start,end,color,notes,items:[]};S.prods.set(nid,p);write('prods/'+nid,'set',{name,start,end,color,notes,items:[]});
+    else{const nid=rid('p'),project=b.dataset.pj||'';const p={id:nid,name,start,end,color,notes,items:[],project,crew:[]};S.prods.set(nid,p);write('prods/'+nid,'set',{name,start,end,color,notes,items:[],project,crew:[]});
       history.back();setTimeout(()=>go({v:'prod',id:nid}),60)}
   },
   dupProd:b=>{const p=S.prods.get(b.dataset.id);if(!p)return;const nid=rid('p');const d={name:p.name+' (copia)',start:p.start,end:p.end,color:p.color,notes:p.notes||'',items:pack(p)};
@@ -976,9 +990,10 @@ function loadDocs(force){
 const tmRefresh=()=>`<button class="ib" data-act="tmReload" aria-label="Aggiorna">${IC.sync||'↻'}</button>`;
 SCR.team={
   title:()=>'Team',
-  acts:tmRefresh,
-  head:()=>`<label class="search">${IC.search}<input type="search" id="tmQ" placeholder="Cerca persona o lavoro" value="${esc(S.tmQ)}" autocomplete="off"></label>`,
+  acts:()=>`<button class="ib" data-act="docs" aria-label="Documenti">${DOC_IC}</button>`+tmRefresh(),
+  head:()=>`<div class="seg" role="group"><button data-act="tmSeg" data-v="plan" aria-pressed="${S.tmSeg==='plan'}">Planning</button><button data-act="tmSeg" data-v="ppl" aria-pressed="${S.tmSeg!=='plan'}">Persone (Flussi)</button></div>`+(S.tmSeg==='plan'?'':`<label class="search">${IC.search}<input type="search" id="tmQ" placeholder="Cerca persona o lavoro" value="${esc(S.tmQ)}" autocomplete="off"></label>`),
   body(){
+    if(S.tmSeg==='plan')return planBody();
     if(!S.team){if(!S.teamLoading&&!S.teamErr)setTimeout(()=>loadTeam(false),0);return S.teamErr?`<div class="empty"><b>Foglio Flussi non raggiungibile</b>${esc(S.teamErr)}</div>`:'<div class="empty"><b>Carico il team…</b>Leggo il foglio Flussi.</div>'}
     if(!S.teamFresh){S.teamFresh=1;setTimeout(()=>loadTeam(false),0)}
     const q=S.tmQ.trim().toLowerCase();
@@ -1189,7 +1204,7 @@ function bigSub(k){
 const evLine=e=>`<div class="hv"><span class="tm">${e.a?esc(e.a):'giorno'}</span><span class="kd k-${e.kind}">${LAB[e.kind]}</span><span class="tx ${e.kind!=='cal'?'w':''}">${esc(e.t)}</span></div>`;
 SCR.home={
   title:SCR.prods.title,
-  acts:()=>`<button class="ib" data-act="homeReload" aria-label="Aggiorna">${IC.sync}</button><button class="ib" data-act="settings" aria-label="Impostazioni">${IC.gear}</button>`,
+  acts:()=>`<button class="ib" data-act="docs" aria-label="Documenti">${DOC_IC}</button><button class="ib" data-act="homeReload" aria-label="Aggiorna">${IC.sync}</button><button class="ib" data-act="settings" aria-label="Impostazioni">${IC.gear}</button>`,
   body(){
     if(!S.homeFresh){S.homeFresh=1;setTimeout(()=>loadHome(false),0)}
     if(!S.team&&!S.teamLoading&&!S.teamErr)setTimeout(()=>loadTeam(false),0);
@@ -1318,6 +1333,192 @@ function login(){
      e permette di scegliere l'account di lavoro se sul telefono ce ne sono più di uno */
   location.href='https://accounts.google.com/AccountChooser?continue='+encodeURIComponent(target);
 }
+/* ---------- Progetti, fasi, ruoli (comune computer/telefono) ---------- */
+S.projects=new Map();S.phases=new Map();S.users=[];S.role='admin';
+try{const c=LS.get('rf-cache');if(c){S.users=c.users||[];S.role=c.role||'admin'}}catch(_){}
+const STATI=[['richiesta','Richiesta'],['opzionato','Opzionato'],['confermato','Confermato'],['post','In post'],['consegnato','Consegnato'],['chiuso','Chiuso']];
+const STATO_L=Object.fromEntries(STATI);
+const TIPI=[['pre','Pre-produzione'],['riprese','Riprese'],['montaggio','Montaggio'],['color','Color'],['grafica','Grafica'],['revisioni','Revisioni'],['consegna','Consegna']];
+const TIPO_L=Object.fromEntries(TIPI);
+const TIPO_ORD=Object.fromEntries(TIPI.map(([k],i)=>[k,i]));
+/* permessi: rispecchiano quelli dello script (il server controlla comunque) */
+function can(kind,action){
+  const r=S.role;if(r==='admin')return true;if(r==='ospite')return false;
+  if(r==='pm'||r==='capo')return kind!=='items'||action==='status';
+  return (kind==='prods'&&action==='items')||(kind==='kits'&&action!=='new'&&action!=='del')||(kind==='items'&&action==='status')||(kind==='phases'&&action==='done');
+}
+const ROLE_L={admin:'Admin',capo:'Capo',pm:'PM',team:'Team',ospite:'Solo consultazione'};
+const myUser=()=>S.users.find(u=>u.email&&u.email===String(S.me||'').toLowerCase())||null;
+const sameName=(a,b)=>String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();
+const pmNames=()=>S.users.filter(u=>u.role!=='team').map(u=>u.name);
+const projSorted=()=>[...S.projects.values()].sort((a,b)=>{const sa=projSpan(a),sb=projSpan(b);return (sa.start||'9').localeCompare(sb.start||'9')||a.name.localeCompare(b.name)});
+const phasesOf=pid=>[...S.phases.values()].filter(f=>f.project===pid);
+const riprOf=pid=>[...S.prods.values()].filter(p=>p.project===pid);
+/* tutte le voci di un progetto come fasi: le riprese sono le produzioni collegate */
+function projRows(pid){
+  const rows=phasesOf(pid).map(f=>({kind:'phase',id:f.id,type:f.type||'pre',name:f.name||TIPO_L[f.type]||'Fase',start:f.start,end:f.end&&f.end>=f.start?f.end:f.start,people:f.people||[],done:!!f.done,notes:f.notes||''}))
+    .concat(riprOf(pid).map(p=>({kind:'prod',id:p.id,type:'riprese',name:p.name,start:p.start,end:p.end,people:p.crew||[],done:p.end<TODAY,pz:units(p),clash:clashes(p)})));
+  return rows.filter(r=>r.start).sort((a,b)=>a.start.localeCompare(b.start)||TIPO_ORD[a.type]-TIPO_ORD[b.type]);
+}
+function projSpan(p){const r=projRows(p.id);if(!r.length)return{start:'',end:''};return{start:r.reduce((m,x)=>x.start<m?x.start:m,r[0].start),end:r.reduce((m,x)=>x.end>m?x.end:m,r[0].end)}}
+function projActive(p){return !['consegnato','chiuso'].includes(p.stato)}
+function projMine(p){const u=myUser();if(!u)return false;return sameName(p.pm,u.name)||sameName(p.account,u.name)||projRows(p.id).some(r=>r.people.some(n=>sameName(n,u.name)))}
+const pjColor=p=>`var(--p${(Number(p&&p.color)||0)%8})`;
+/* voci del planning per una persona tra due date */
+function blocksFor(u,from,to){
+  const out=[];
+  for(const f of S.phases.values()){const pr=S.projects.get(f.project);if(!pr||!f.start)continue;const e=f.end&&f.end>=f.start?f.end:f.start;
+    if(e<from||f.start>to)continue;if(!(f.people||[]).some(n=>sameName(n,u.name)))continue;
+    out.push({type:f.type,start:f.start,end:e,label:(TIPO_L[f.type]||'Fase')+' · '+pr.name,pid:pr.id,phase:f.id,done:!!f.done})}
+  for(const p of S.prods.values()){if(p.end<from||p.start>to)continue;if(!(p.crew||[]).some(n=>sameName(n,u.name)))continue;
+    const pr=S.projects.get(p.project);out.push({type:'riprese',start:p.start,end:p.end,label:p.name+(pr&&!p.name.toLowerCase().includes(pr.name.toLowerCase())?' · '+pr.name:''),prod:p.id,pid:p.project||'',clash:clashes(p)>0})}
+  return out.sort((a,b)=>a.start.localeCompare(b.start));
+}
+/* voci del foglio Flussi per una persona (se il Team è caricato) */
+function flussiFor(u,from,to){
+  if(!S.team||!S.team.people)return[];
+  const k=(u.flussi||u.name.split(' ')[0]).toLowerCase();
+  const p=S.team.people.find(x=>String(x.name).toLowerCase()===k)||(u.flussi?null:S.team.people.find(x=>String(x.name).toLowerCase().startsWith(k)));
+  if(!p)return[];
+  return (p.items||[]).filter(x=>x.to>=from&&x.from<=to).map(x=>({type:'flussi',start:x.from,end:x.to,label:x.t,flussi:true}));
+}
+function lanes(list){const end=[];return list.map(b=>{let l=end.findIndex(e=>e<b.start);if(l<0){l=end.length;end.push('')}end[l]=b.end;return{...b,lane:l}})}
+
+const monday=s=>{const d=parse(s);const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return iso(d)};
+const DOC_IC='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>';
+/* ---------- Progetti e Planning (telefono) ---------- */
+S.pjF='attivi';S.pjQ='';S.tmSeg='plan';S.plWho='';S.plFl=true;
+const TYTAG=t=>`<span class="ty ${t}">${esc((TIPO_L[t]||t).toUpperCase())}</span>`;
+const spanS=(a,b)=>!b||a===b?fmtS.format(parse(a)):fmtS.format(parse(a))+' → '+fmtS.format(parse(b));
+SCR.projs={
+  title:()=>'Progetti',
+  head:()=>`<label class="search">${IC.search}<input type="search" id="pjQ" placeholder="Cerca progetto, cliente, PM" value="${esc(S.pjQ)}" autocomplete="off"></label>
+   <div class="chips">${[['attivi','Attivi'],['miei','I miei'],['tutti','Tutti'],['chiusi','Chiusi']].map(([k,l])=>`<button class="chip" data-act="pjF" data-f="${k}" aria-pressed="${S.pjF===k}">${l}</button>`).join('')}</div>`,
+  fab:()=>can('projects','new')?({html:IC.plus,act:'newProj'}):null,
+  body(){
+    const q=S.pjQ.trim().toLowerCase();
+    const ps=projSorted().filter(p=>(!q||(p.name+' '+(p.client||'')+' '+(p.pm||'')).toLowerCase().includes(q))&&(S.pjF==='tutti'||(S.pjF==='chiusi'?!projActive(p):S.pjF==='miei'?projMine(p)&&projActive(p):projActive(p))));
+    if(!ps.length)return `<div class="empty"><b>${q?'Nessun risultato':'Nessun progetto'}</b>${can('projects','new')&&!q?'Tocca + per crearne uno.':''}</div>`;
+    return '<div class="plist" style="padding-top:12px">'+ps.map(p=>{const sp=projSpan(p),rows=projRows(p.id),nx=rows.find(r=>r.end>=TODAY&&!r.done);
+      return `<button class="pc" style="--pc:${pjColor(p)}" data-go="proj" data-id="${p.id}"><span class="mid"><span class="t">${esc(p.name)}</span><span class="s">${esc([p.client,p.pm&&'PM '+p.pm].filter(Boolean).join(' · ')||'—')}${sp.start?' · '+esc(spanS(sp.start,sp.end)):''}</span>${nx?`<span class="s">${TYTAG(nx.type)} ${esc(nx.name)} · ${esc(whenS(nx.start))}</span>`:''}</span><span class="rt"><span class="st ${esc(p.stato||'')}">${esc(STATO_L[p.stato]||'—')}</span></span></button>`}).join('')+'</div>';
+  }
+};
+SCR.proj={
+  title:()=>'Progetto',
+  acts:r=>S.projects.has(r.id)&&can('projects','edit')?`<button class="ib" data-act="editProj" data-id="${r.id}" aria-label="Modifica">${IC.edit}</button>`:'',
+  fab:r=>can('phases','new')&&S.projects.has(r.id)?({html:IC.plus+'Aggiungi fase',act:'newPhase',wide:true}):null,
+  body(r){
+    const p=S.projects.get(r.id);if(!p)return '<div class="empty"><b>Progetto non trovato</b>Forse è stato eliminato.</div>';
+    const rows=projRows(p.id),ppl=[...new Set(rows.flatMap(x=>x.people))];
+    let h=`<div class="hero" style="--pc:${pjColor(p)}"><h2>${esc(p.name)}</h2><div class="when">${esc([p.client,p.pm&&'PM '+p.pm,p.account&&p.account!==p.pm&&'Account '+p.account].filter(Boolean).join(' · ')||'—')}</div>
+      <div class="stats"><span class="st ${esc(p.stato||'')}">${esc(STATO_L[p.stato]||'—')}</span>${ppl.length?`<span class="stat">${esc(ppl.join(', '))}</span>`:''}</div>
+      ${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}</div>
+      <div class="acts">${can('prods','new')?`<button class="btn" data-act="newRip" data-id="${p.id}">${IC.plus}Giorni di riprese</button>`:''}${p.drive?`<a class="btn" href="${esc(p.drive)}" target="_blank" rel="noopener">Cartella Drive</a>`:''}</div>`;
+    if(!rows.length)return h+`<div class="empty"><b>Nessuna fase</b>${can('phases','new')?'Tocca “Aggiungi fase”.':''}</div>`;
+    h+='<div class="sec">Fasi</div><div class="list">';
+    for(const x of rows){
+      const now=x.start<=TODAY&&x.end>=TODAY;
+      h+=`<div class="it ${x.done&&x.kind==='phase'?'done':''}">${x.kind==='phase'&&can('phases','done')?`<button class="cb ${x.done?'on':''}" data-act="phDone" data-id="${x.id}" aria-label="Fatta: ${esc(x.name)}"></button>`:''}
+        <span class="mid" ${x.kind==='prod'?`data-go="prod" data-id="${x.id}"`:`data-act="phase" data-id="${x.id}"`}><span class="t">${TYTAG(x.type)} ${esc(x.name)}</span><span class="s">${now?'<span class="ok">In corso</span> · ':''}${esc(spanS(x.start,x.end))}${x.people.length?' · '+esc(x.people.join(', ')):''}${x.pz!=null?' · '+x.pz+' pz':''}${x.clash?' · <span class="bad">conflitto</span>':''}</span></span>${IC.chev}</div>`;
+    }
+    return h+'</div>';
+  }
+};
+/* Planning nel tab Team */
+function planBody(){
+  const me=myUser();if(!S.plWho)S.plWho=me?me.name:(S.users[0]||{}).name||'';
+  const u=S.users.find(x=>x.name===S.plWho);
+  const chips=`<div class="chips" style="padding-top:10px">${S.users.map(x=>`<button class="chip" data-act="plWho" data-n="${esc(x.name)}" aria-pressed="${x.name===S.plWho}">${esc(x.name)}${me&&x.name===me.name?' (tu)':''}</button>`).join('')}</div>`;
+  if(!u)return chips+'<div class="empty"><b>Nessuna persona</b>Le persone arrivano dalla scheda Utenti del foglio.</div>';
+  if(S.plFl&&!S.team&&!S.teamLoading&&!S.teamErr)setTimeout(()=>loadTeam(false),0);
+  const from=addD(TODAY,-7),to=addD(TODAY,28);
+  const bl=[...blocksFor(u,from,to),...(S.plFl?flussiFor(u,from,to):[])].filter(b=>b.end>=TODAY).sort((a,b)=>a.start.localeCompare(b.start));
+  const now=bl.filter(b=>b.start<=TODAY),next=bl.filter(b=>b.start>TODAY);
+  const row=b=>`<div class="it" ${b.prod?`data-go="prod" data-id="${b.prod}"`:b.pid?`data-go="proj" data-id="${b.pid}"`:''}><span class="mid"><span class="t">${TYTAG(b.type)} ${esc(b.label)}</span><span class="s">${esc(spanS(b.start,b.end))}${b.flussi?' · foglio Flussi':''}${b.clash?' · <span class="bad">conflitto</span>':''}</span></span>${b.flussi?'':IC.chev}</div>`;
+  let h=chips+`<div class="sw" style="margin:6px 16px 0;border-top:0"><span>Mostra anche il foglio Flussi</span><button class="tg" role="switch" aria-checked="${S.plFl}" data-act="plFl"></button></div>`;
+  if(!bl.length)return h+`<div class="empty"><b>Niente in programma</b>Nelle prossime 4 settimane.</div>`;
+  if(now.length)h+=`<div class="sec">Adesso</div><div class="list">${now.map(row).join('')}</div>`;
+  let wk='';for(const b of next){const w=monday(b.start);if(w!==wk){if(wk)h+='</div>';wk=w;h+=`<div class="sec">${w<=TODAY?'Questa settimana':'Settimana del '+esc(fmtS.format(parse(w)))}</div><div class="list">`}h+=row(b)}
+  return h+(wk?'</div>':'');
+}
+Object.assign(SHEETS,{
+  projEdit(sh){
+    const p=sh.id?S.projects.get(sh.id):null,v=p||{name:'',client:'',pm:myUser()&&myUser().role!=='team'?myUser().name:'',account:'',stato:'richiesta',drive:'',notes:'',color:Math.floor(Math.random()*8)};
+    const opt=cur=>`<option value="">—</option>`+[...new Set([...pmNames(),cur].filter(Boolean))].map(n=>`<option ${sameName(n,cur)?'selected':''}>${esc(n)}</option>`).join('');
+    return `<h3>${p?'Modifica progetto':'Nuovo progetto'}</h3>
+    <label class="fld"><span>Nome</span><input id="pjN" value="${esc(v.name)}" placeholder="Cliente – cosa" autocomplete="off"></label>
+    <label class="fld"><span>Cliente</span><input id="pjC" value="${esc(v.client||'')}"></label>
+    <div class="two"><label class="fld"><span>PM</span><select id="pjP">${opt(v.pm)}</select></label><label class="fld"><span>Account</span><select id="pjA">${opt(v.account)}</select></label></div>
+    <label class="fld"><span>Stato</span><select id="pjS">${STATI.map(([k,l])=>`<option value="${k}" ${v.stato===k?'selected':''}>${l}</option>`).join('')}</select></label>
+    <div class="fld"><span>Colore</span><div class="colors" id="pjCol">${Array.from({length:8},(_,k)=>`<button type="button" style="--c:var(--p${k})" data-c="${k}" aria-pressed="${(Number(v.color)||0)%8===k}" aria-label="Colore ${k+1}"></button>`).join('')}</div></div>
+    <label class="fld"><span>Cartella Drive (link)</span><input id="pjD" value="${esc(v.drive||'')}" placeholder="https://drive.google.com/…" inputmode="url"></label>
+    <label class="fld"><span>Note</span><textarea id="pjNo">${esc(v.notes||'')}</textarea></label>
+    <button class="btn primary" style="width:100%" data-act="saveProj" data-id="${p?p.id:''}">${p?'Salva':'Crea progetto'}</button>
+    ${p&&can('projects','del')?`<div class="row-btns"><button class="btn danger" data-act="delProj" data-id="${p.id}">Elimina progetto</button></div>`:''}`;
+  },
+  phase(sh){
+    const f=sh.id?S.phases.get(sh.id):null,v=f||{type:'montaggio',name:'',start:TODAY,end:TODAY,people:[],notes:'',done:false},full=can('phases','edit'),dis=full?'':'disabled';
+    S.phPeople=new Set(v.people||[]);
+    return `<h3>${f?esc(f.name||TIPO_L[f.type]):'Nuova fase'}</h3>
+    <label class="fld"><span>Tipo</span><select id="phT" ${dis}>${TIPI.filter(([k])=>k!=='riprese').map(([k,l])=>`<option value="${k}" ${v.type===k?'selected':''}>${l}</option>`).join('')}</select></label>
+    <label class="fld"><span>Nome (facoltativo)</span><input id="phN" value="${esc(v.name||'')}" ${dis}></label>
+    <div class="two"><label class="fld"><span>Dal</span><input type="date" id="phS" value="${esc(v.start||TODAY)}" ${dis}></label><label class="fld"><span>Al</span><input type="date" id="phE" value="${esc(v.end||v.start||TODAY)}" ${dis}></label></div>
+    <div class="fld"><span>Persone</span></div><div class="chips wrap" id="phP" style="margin:0 0 14px;padding:0;flex-wrap:wrap">${S.users.map(u=>`<button type="button" class="chip" data-act="phPpl" data-n="${esc(u.name)}" aria-pressed="${(v.people||[]).some(n=>sameName(n,u.name))}" ${dis}>${esc(u.name)}</button>`).join('')}</div>
+    <label class="fld"><span>Note</span><input id="phNo" value="${esc(v.notes||'')}"></label>
+    <div class="sw"><span>Fatta</span><button class="tg" role="switch" aria-checked="${!!v.done}" data-act="phTg" id="phD"></button></div>
+    <button class="btn primary" style="width:100%;margin-top:10px" data-act="savePhase" data-id="${f?f.id:''}" data-p="${esc(sh.pid||'')}">${f?'Salva':'Aggiungi fase'}</button>
+    ${f&&can('phases','del')?`<div class="row-btns"><button class="btn danger" data-act="delPhase" data-id="${f.id}">Elimina fase</button></div>`:''}`;
+  },
+  crew(sh){
+    const p=S.prods.get(sh.id);if(!p)return '';
+    const opts=projSorted().filter(x=>projActive(x)||x.id===p.project);
+    return `<h3>Progetto e crew</h3><div class="sub">${esc(p.name)}</div>
+    <label class="fld"><span>Progetto</span><select id="crP" ${can('prods','edit')?'':'disabled'}><option value="">— nessun progetto —</option>${opts.map(x=>`<option value="${x.id}" ${x.id===p.project?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
+    <div class="fld"><span>Crew</span></div><div class="chips" style="margin:0 0 14px;padding:0;flex-wrap:wrap">${S.users.map(u=>`<button type="button" class="chip" data-act="crewT" data-n="${esc(u.name)}" aria-pressed="${(p.crew||[]).some(n=>sameName(n,u.name))}">${esc(u.name)}</button>`).join('')}</div>
+    <button class="btn primary" style="width:100%" data-act="saveCrew" data-id="${p.id}">Fatto</button>`;
+  }
+});
+Object.assign(ACT,{
+  pjF:b=>{S.pjF=b.dataset.f;renderHead();renderBody()},
+  newProj:()=>openSheet({t:'projEdit'}),
+  editProj:b=>openSheet({t:'projEdit',id:b.dataset.id}),
+  saveProj:b=>{
+    const name=$('#pjN').value.trim();if(!name){$('#pjN').focus();return}
+    const d={name,client:$('#pjC').value.trim(),pm:$('#pjP').value,account:$('#pjA').value,stato:$('#pjS').value,color:+($('#pjCol [aria-pressed=true]')?.dataset.c||0),drive:$('#pjD').value.trim(),notes:$('#pjNo').value.trim()};
+    const id=b.dataset.id;
+    if(id){Object.assign(S.projects.get(id),d);write('projects/'+id,'update',d);closeSheet();refresh()}
+    else{const nid=rid('j');S.projects.set(nid,{id:nid,...d});write('projects/'+nid,'set',d);history.back();setTimeout(()=>go({v:'proj',id:nid}),60)}
+  },
+  delProj:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'dj','Tocca di nuovo per eliminare',()=>{const id=b.dataset.id;
+    phasesOf(id).forEach(f=>{S.phases.delete(f.id);write('phases/'+f.id,'delete')});riprOf(id).forEach(p=>{p.project='';write('prods/'+p.id,'update',{project:''})});
+    S.projects.delete(id);write('projects/'+id,'delete');history.go(-2)})},
+  newPhase:()=>openSheet({t:'phase',pid:R().id}),
+  phase:b=>openSheet({t:'phase',id:b.dataset.id,pid:R().id}),
+  phPpl:b=>{const n=b.dataset.n,on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);if(on)S.phPeople.add(n);else[...S.phPeople].forEach(x=>{if(sameName(x,n))S.phPeople.delete(x)})},
+  phTg:b=>b.setAttribute('aria-checked',b.getAttribute('aria-checked')!=='true'),
+  savePhase:b=>{
+    const id=b.dataset.id,done=$('#phD').getAttribute('aria-checked')==='true',notes=$('#phNo').value.trim();
+    let d;
+    if(can('phases','edit')){let s=$('#phS').value||TODAY,e=$('#phE').value||s;if(e<s)[s,e]=[e,s];d={type:$('#phT').value,name:$('#phN').value.trim(),start:s,end:e,people:[...S.phPeople],notes,done}}
+    else d={notes,done};
+    if(id){Object.assign(S.phases.get(id),d);write('phases/'+id,'update',d)}
+    else{const nid=rid('f');const f={project:b.dataset.p,...d};S.phases.set(nid,{id:nid,...f});write('phases/'+nid,'set',f)}
+    closeSheet();refresh();
+  },
+  delPhase:b=>{if(!b.dataset.orig)b.dataset.orig=b.textContent;armed(b,'df','Tocca di nuovo per eliminare',()=>{const id=b.dataset.id;S.phases.delete(id);write('phases/'+id,'delete');closeSheet();refresh()})},
+  phDone:b=>{const f=S.phases.get(b.dataset.id);if(!f)return;f.done=!f.done;write('phases/'+f.id,'update',{done:f.done});refresh()},
+  newRip:b=>{const p=S.projects.get(b.dataset.id);if(!p)return;openSheet({t:'prod',pj:p.id})},
+  crew:b=>openSheet({t:'crew',id:b.dataset.id}),
+  crewT:b=>b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true'),
+  saveCrew:b=>{const p=S.prods.get(b.dataset.id);if(!p)return;const crew=[...document.querySelectorAll('#sheet [data-act=crewT][aria-pressed=true]')].map(x=>x.dataset.n);
+    const patch={crew};const sel=$('#crP');if(sel&&!sel.disabled&&sel.value!==(p.project||''))patch.project=sel.value;Object.assign(p,patch);write('prods/'+p.id,'update',patch);closeSheet();refresh()},
+  tmSeg:b=>{S.tmSeg=b.dataset.v;renderHead();renderBody();window.scrollTo(0,0)},
+  plWho:b=>{S.plWho=b.dataset.n;renderBody()},
+  plFl:()=>{S.plFl=!S.plFl;renderBody()},
+  docs:()=>go({v:'docs'})
+});
+document.addEventListener('input',e=>{if(e.target.id==='pjQ'){S.pjQ=e.target.value;renderBody()}});
+
 function showSetup(err){
   $('#app').hidden=true;const el=$('#setup');el.hidden=false;
   const iosSafari=IOS&&!STANDALONE;
@@ -1363,7 +1564,7 @@ async function connect(url,token){
   if(!/^https:\/\/script\.google\.com\//.test(url)||!/^[0-9a-f]{64}$/.test(token)){showSetup('Link di accesso non valido.');return}
   CFG={url,token};expiredShown=false;
   const b=$('#suGo');if(b){b.disabled=true;b.textContent='Collegamento…'}
-  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;S.me=r.me||'';LS.set('rf-me',S.me);ingest(r.data);cacheSave();start();if(S.me)snack('Ciao '+(S.me.split('@')[0].split(/[._-]/).find(w=>w.length>1)||S.me).replace(/^./,c=>c.toUpperCase())+'!')}
+  try{const r=await api('getData');LS.set('rf-cfg',CFG);stamp=r.stamp;S.me=r.me||'';LS.set('rf-me',S.me);S.users=r.users||[];S.role=r.role||'admin';ingest(r.data);cacheSave();start();if(S.me)snack('Ciao '+(S.me.split('@')[0].split(/[._-]/).find(w=>w.length>1)||S.me).replace(/^./,c=>c.toUpperCase())+'!')}
   catch(e){if(!/Accesso/.test(e.message)){CFG=null;showSetup('Non riesco a raggiungere l\'archivio. Riprova tra poco.')}}
 }
 function start(){
