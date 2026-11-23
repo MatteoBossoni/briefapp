@@ -379,6 +379,7 @@ body{font-size:15px}
 .it .cb.on::after{content:"";width:10px;height:6px;border:solid #000;border-width:0 0 2.5px 2.5px;transform:rotate(-45deg) translate(1px,-1px)}
 .lnk{color:inherit;text-align:left;padding:0;font:inherit}
 .chips.wrap{overflow:visible}
+.seg.top{margin-top:2px}.seg.sub button{font-size:15px;min-height:34px}
 </style>
 </head>
 <body>
@@ -397,8 +398,8 @@ body{font-size:15px}
   <nav class="tabs" id="tabs">
     <button data-tab="home"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/></svg></span>Home</button>
     <button data-tab="projs"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M7 13h4M7 16h8"/></svg></span>Progetti</button>
-    <button data-tab="prods"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="14" height="11" rx="2"/><path d="M16 11l5-3v9l-5-3"/></svg></span>Riprese</button>
-    <button data-tab="att"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>Attrezzatura</button>
+    <button data-tab="prods"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="14" height="11" rx="2"/><path d="M16 11l5-3v9l-5-3"/></svg></span>Produzioni</button>
+    <button data-tab="plan"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4M7 14h5M7 17h9"/></svg></span>Planning</button>
     <button data-tab="team"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/></svg></span>Team</button>
   </nav>
 </div>
@@ -587,8 +588,8 @@ const rid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const LITE=false,LITE_OFF=['home','todos','team','person'];
 const HOME=LITE?'prods':'home';
 const R=()=>{const r=history.state;return !r||(LITE&&LITE_OFF.includes(r.v))?{v:HOME}:r};
-const TOP=['home','projs','prods','mag','kits','inv','team','docs'];
-const TABOF=v=>['mag','kits','inv'].includes(v)?'att':v==='docs'?'home':v;
+const TOP=['home','projs','prods','plan','mag','kits','inv','team','docs'];
+const TABOF=v=>['mag','kits','inv'].includes(v)?'prods':v==='docs'?'home':v;
 function go(route,replace){
   const cur=R();const sy=window.scrollY;
   history.replaceState({...cur,sy},'');
@@ -633,7 +634,7 @@ function renderBody(){
 SCR.prods={
   title:()=>'<svg class="mono-b" viewBox="0 0 34 64" aria-hidden="true"><path d="M11.2,30.7l20.9-12.1L0,0.1v24.1v13v26.3l34-19.6L11.2,30.7z M3.8,6.5l21,12.1L7.6,28.5l-3.8-2.2V6.5z M3.8,35l3.7-2.1l19,11l-22.7,13V35L3.8,35z"/></svg><span>Brief<b class="app">App</b></span>',
   acts:()=>`<button class="ib" data-act="settings" aria-label="Impostazioni">${IC.gear}</button>`,
-  head:()=>`<div class="seg" role="group"><button data-act="pseg" data-v="up" aria-pressed="${S.pseg==='up'}">In arrivo</button><button data-act="pseg" data-v="past" aria-pressed="${S.pseg==='past'}">Concluse</button></div>`,
+  head:()=>PTOP('prods')+`<div class="seg sub" role="group"><button data-act="pseg" data-v="up" aria-pressed="${S.pseg==='up'}">In arrivo</button><button data-act="pseg" data-v="past" aria-pressed="${S.pseg==='past'}">Concluse</button></div>`,
   fab:()=>can('prods','new')?({html:IC.plus,act:'newProd'}):null,
   body(){
     const all=prodsSorted();
@@ -735,7 +736,7 @@ SCR.pick={
 
 /* Magazzino */
 SCR.mag={
-  title:()=>'Magazzino',
+  title:()=>'Attrezzatura',
   acts:()=>`<button class="ib" data-act="settings" aria-label="Impostazioni">${IC.gear}</button>`,
   head:()=>{const m=S.mag;return `<div class="datebox">Disponibilità il<input type="date" id="magDate" value="${m.date}"></div>
     <label class="search">${IC.search}<input type="search" id="magQ" placeholder="Cerca nel magazzino" value="${esc(m.q)}" autocomplete="off"></label>
@@ -991,7 +992,7 @@ const tmRefresh=()=>`<button class="ib" data-act="tmReload" aria-label="Aggiorna
 SCR.team={
   title:()=>'Team',
   acts:()=>`<button class="ib" data-act="docs" aria-label="Documenti">${DOC_IC}</button>`+tmRefresh(),
-  head:()=>`<div class="seg" role="group"><button data-act="tmSeg" data-v="plan" aria-pressed="${S.tmSeg==='plan'}">Planning</button><button data-act="tmSeg" data-v="ppl" aria-pressed="${S.tmSeg!=='plan'}">Persone (Flussi)</button></div>`+(S.tmSeg==='plan'?'':`<label class="search">${IC.search}<input type="search" id="tmQ" placeholder="Cerca persona o lavoro" value="${esc(S.tmQ)}" autocomplete="off"></label>`),
+  head:()=>(S.tmSeg==='plan'?'':`<label class="search">${IC.search}<input type="search" id="tmQ" placeholder="Cerca persona o lavoro" value="${esc(S.tmQ)}" autocomplete="off"></label>`),
   body(){
     if(S.tmSeg==='plan')return planBody();
     if(!S.team){if(!S.teamLoading&&!S.teamErr)setTimeout(()=>loadTeam(false),0);return S.teamErr?`<div class="empty"><b>Foglio Flussi non raggiungibile</b>${esc(S.teamErr)}</div>`:'<div class="empty"><b>Carico il team…</b>Leggo il foglio Flussi.</div>'}
@@ -1234,7 +1235,8 @@ SCR.todos={
   }
 };
 /* Attrezzatura: tre schede nella stessa sezione */
-const attSeg=()=>`<div class="seg" role="group" style="margin-bottom:10px">${[['mag','Disponibilità'],['kits','Kit'],['inv','Inventario']].map(([v,l])=>`<button data-act="attSeg" data-v="${v}" aria-pressed="${R().v===v}">${l}</button>`).join('')}</div>`;
+const PTOP=on=>`<div class="seg top" role="group" style="margin-bottom:8px"><button data-act="ptop" data-v="prods" aria-pressed="${on==='prods'}">Produzioni</button><button data-act="ptop" data-v="att" aria-pressed="${on==='att'}">Attrezzatura</button></div>`;
+const attSeg=()=>PTOP('att')+`<div class="seg sub" role="group" style="margin-bottom:10px">${[['mag','Disponibilità'],['kits','Kit'],['inv','Inventario']].map(([v,l])=>`<button data-act="attSeg" data-v="${v}" aria-pressed="${R().v===v}">${l}</button>`).join('')}</div>`;
 SCR.mag.title=SCR.kits.title=()=>'Attrezzatura';
 {const mh=SCR.mag.head;SCR.mag.head=r=>attSeg()+mh(r)}
 SCR.kits.head=()=>attSeg();
@@ -1276,6 +1278,7 @@ Object.assign(ACT,{
   todo:b=>todoToggle(b.dataset.id),
   todoDel:b=>todoDel(b.dataset.id),
   attSeg:b=>{S.attSeg=b.dataset.v;LS.set('rf-att',S.attSeg);go({v:S.attSeg},true)},
+  ptop:b=>{const v=b.dataset.v==='att'?(S.attSeg||'mag'):'prods';if(R().v!==v)go({v},true)},
   invcat:b=>{S.inv.cat=b.dataset.c;renderHead();renderBody()},
   tmF:b=>{S.tmF=b.dataset.v;renderBody()},
   myProfile:()=>{const p=teamPeople().find(x=>x.me);if(p)go({v:'person',id:p.name});else go({v:'team'})}
@@ -1287,7 +1290,7 @@ document.addEventListener('click',e=>{
   const g=e.target.closest('[data-go]');
   if(g){go({v:g.dataset.go,id:g.dataset.id});return}
   const t=e.target.closest('#tabs button');
-  if(t){const tv=t.dataset.tab==='att'?(S.attSeg||'mag'):t.dataset.tab;if(TABOF(R().v)!==t.dataset.tab){go({v:tv},true)}else window.scrollTo({top:0,behavior:'smooth'});return}
+  if(t){const tv=t.dataset.tab;if(TABOF(R().v)!==t.dataset.tab){go({v:tv},true)}else window.scrollTo({top:0,behavior:'smooth'});return}
   const c=e.target.closest('#fColor button');
   if(c){c.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===c));return}
   const a=e.target.closest('[data-act]');
@@ -1338,7 +1341,7 @@ S.projects=new Map();S.phases=new Map();S.users=[];S.role='admin';
 try{const c=LS.get('rf-cache');if(c){S.users=c.users||[];S.role=c.role||'admin'}}catch(_){}
 const STATI=[['richiesta','Richiesta'],['opzionato','Opzionato'],['confermato','Confermato'],['post','In post'],['consegnato','Consegnato'],['chiuso','Chiuso']];
 const STATO_L=Object.fromEntries(STATI);
-const TIPI=[['pre','Pre-produzione'],['riprese','Riprese'],['montaggio','Montaggio'],['color','Color'],['grafica','Grafica'],['revisioni','Revisioni'],['consegna','Consegna']];
+const TIPI=[['pre','Pre-produzione'],['riprese','Produzione'],['montaggio','Montaggio'],['color','Color'],['grafica','Grafica'],['revisioni','Revisioni'],['consegna','Consegna']];
 const TIPO_L=Object.fromEntries(TIPI);
 const TIPO_ORD=Object.fromEntries(TIPI.map(([k],i)=>[k,i]));
 /* permessi: rispecchiano quelli dello script (il server controlla comunque) */
@@ -1387,7 +1390,7 @@ function lanes(list){const end=[];return list.map(b=>{let l=end.findIndex(e=>e<b
 const monday=s=>{const d=parse(s);const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return iso(d)};
 const DOC_IC='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>';
 /* ---------- Progetti e Planning (telefono) ---------- */
-S.pjF='attivi';S.pjQ='';S.tmSeg='plan';S.plWho='';S.plFl=true;
+S.pjF='attivi';S.pjQ='';S.tmSeg='ppl';S.plWho='';S.plFl=true;
 const TYTAG=t=>`<span class="ty ${t}">${esc((TIPO_L[t]||t).toUpperCase())}</span>`;
 const spanS=(a,b)=>!b||a===b?fmtS.format(parse(a)):fmtS.format(parse(a))+' → '+fmtS.format(parse(b));
 SCR.projs={
@@ -1413,7 +1416,7 @@ SCR.proj={
     let h=`<div class="hero" style="--pc:${pjColor(p)}"><h2>${esc(p.name)}</h2><div class="when">${esc([p.client,p.pm&&'PM '+p.pm,p.account&&p.account!==p.pm&&'Account '+p.account].filter(Boolean).join(' · ')||'—')}</div>
       <div class="stats"><span class="st ${esc(p.stato||'')}">${esc(STATO_L[p.stato]||'—')}</span>${ppl.length?`<span class="stat">${esc(ppl.join(', '))}</span>`:''}</div>
       ${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}</div>
-      <div class="acts">${can('prods','new')?`<button class="btn" data-act="newRip" data-id="${p.id}">${IC.plus}Giorni di riprese</button>`:''}${p.drive?`<a class="btn" href="${esc(p.drive)}" target="_blank" rel="noopener">Cartella Drive</a>`:''}</div>`;
+      <div class="acts">${can('prods','new')?`<button class="btn" data-act="newRip" data-id="${p.id}">${IC.plus}Produzione</button>`:''}${p.drive?`<a class="btn" href="${esc(p.drive)}" target="_blank" rel="noopener">Cartella Drive</a>`:''}</div>`;
     if(!rows.length)return h+`<div class="empty"><b>Nessuna fase</b>${can('phases','new')?'Tocca “Aggiungi fase”.':''}</div>`;
     h+='<div class="sec">Fasi</div><div class="list">';
     for(const x of rows){
@@ -1424,11 +1427,12 @@ SCR.proj={
     return h+'</div>';
   }
 };
-/* Planning nel tab Team */
+SCR.plan={title:()=>'Planning',acts:()=>`<button class="ib" data-act="docs" aria-label="Documenti">${DOC_IC}</button>`,body:()=>planBody()};
+/* Planning */
 function planBody(){
   const me=myUser();if(!S.plWho)S.plWho=me?me.name:(S.users[0]||{}).name||'';
   const u=S.users.find(x=>x.name===S.plWho);
-  const chips=`<div class="chips" style="padding-top:10px">${S.users.map(x=>`<button class="chip" data-act="plWho" data-n="${esc(x.name)}" aria-pressed="${x.name===S.plWho}">${esc(x.name)}${me&&x.name===me.name?' (tu)':''}</button>`).join('')}</div>`;
+  const chips=`<div class="chips" style="margin:0;padding:10px 16px 0">${S.users.map(x=>`<button class="chip" data-act="plWho" data-n="${esc(x.name)}" aria-pressed="${x.name===S.plWho}">${esc(x.name)}${me&&x.name===me.name?' (tu)':''}</button>`).join('')}</div>`;
   if(!u)return chips+'<div class="empty"><b>Nessuna persona</b>Le persone arrivano dalla scheda Utenti del foglio.</div>';
   if(S.plFl&&!S.team&&!S.teamLoading&&!S.teamErr)setTimeout(()=>loadTeam(false),0);
   const from=addD(TODAY,-7),to=addD(TODAY,28);
