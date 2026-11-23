@@ -837,8 +837,12 @@ const SHEETS={
     <div class="fld"><span>Stato</span></div><div class="segs">${Object.keys(ST).map(k=>`<button data-act="itStatus" data-id="${it.id}" data-v="${k}" aria-pressed="${it.status===k}">${ST[k]}</button>`).join('')}</div>
     <label class="fld"><span>Note</span><input id="itNote" value="${esc(it.note||'')}" placeholder="Es. manca il paraluce" data-id="${it.id}"></label>
     <div class="sw"><span>Extra / vecchio<small>Nascosto nelle liste se non lo cerchi</small></span><button class="tg" role="switch" aria-checked="${!!it.extra}" data-act="itExtra" data-id="${it.id}"></button></div>
-    <div class="fld" style="margin-top:8px"><span>Prossimi utilizzi</span></div>
-    <div class="uses">${fut.length?fut.map(p=>`<div style="--pc:${pc(p)}"><i></i><span class="mid"><span class="t" style="font-size:15px">${esc(p.name)}${qn(p,it.id)>1?' ×'+qn(p,it.id):''}</span><span class="s">${esc(range(p))}</span></span></div>`).join(''):'<div style="color:var(--muted)">Nessuna produzione in programma.</div>'}</div>`;
+    ${(()=>{const h=itemHistory(it.id),{past,fut,gg,last}=itemHistSummary(h);
+      const row=x=>`<div style="--pc:${pc(x.p)}" data-go="prod" data-id="${x.p.id}"><i></i><span class="mid"><span class="t" style="font-size:15px">${esc(x.p.name)}${x.n>1?' ×'+x.n:''}</span><span class="s">${esc(range(x.p))}${x.pj?' · '+esc(x.pj.name):''}${(x.p.crew||[]).length?' · '+esc(x.p.crew.join(', ')):''}</span></span></div>`;
+      return `<div class="fld" style="margin-top:8px"><span>Storico · ${past.length} produzion${past.length===1?'e':'i'}${gg?' · '+gg+' giorni':''}${last?' · ultima '+esc(fmtS.format(parse(last.p.start))):''}</span></div>
+      <div class="uses">${past.length?past.slice(0,S.histAll===it.id?999:8).map(row).join('')+(past.length>8&&S.histAll!==it.id?`<button class="btn" style="width:100%;margin-top:6px" data-act="histAll" data-id="${it.id}">Mostra tutte (${past.length})</button>`:''):'<div style="color:var(--muted)">Non ancora usato in nessuna produzione</div>'}</div>
+      <div class="fld" style="margin-top:14px"><span>Prossimi utilizzi</span></div>
+      <div class="uses">${fut.length?fut.slice(0,5).map(row).join('')+(fut.length>5?`<div style="color:var(--muted);font-size:13px;margin-top:4px">…e altre ${fut.length-5}</div>`:''):'<div style="color:var(--muted)">Nessuna produzione in programma</div>'}</div>`})()}`;
   },
   qty(sh){
     const o=sh.mode==='prod'?S.prods.get(sh.oid):S.kits.get(sh.oid);const Q=qty(sh.id);if(!o)return '';
@@ -1278,6 +1282,7 @@ Object.assign(ACT,{
   todo:b=>todoToggle(b.dataset.id),
   todoDel:b=>todoDel(b.dataset.id),
   attSeg:b=>{S.attSeg=b.dataset.v;LS.set('rf-att',S.attSeg);go({v:S.attSeg},true)},
+  histAll:b=>{S.histAll=b.dataset.id;renderSheet()},
   ptop:b=>{const v=b.dataset.v==='att'?(S.attSeg||'mag'):'prods';if(R().v!==v)go({v},true)},
   invcat:b=>{S.inv.cat=b.dataset.c;renderHead();renderBody()},
   tmF:b=>{S.tmF=b.dataset.v;renderBody()},
@@ -1384,6 +1389,17 @@ function flussiFor(u,from,to){
   const p=S.team.people.find(x=>String(x.name).toLowerCase()===k)||(u.flussi?null:S.team.people.find(x=>String(x.name).toLowerCase().startsWith(k)));
   if(!p)return[];
   return (p.items||[]).filter(x=>x.to>=from&&x.from<=to).map(x=>({type:'flussi',start:x.from,end:x.to,label:x.t,flussi:true}));
+}
+
+/* storico di un pezzo: tutte le produzioni (passate e future) in cui compare */
+function itemHistory(id){
+  return [...S.prods.values()].filter(p=>(p.items||[]).includes(id)&&p.start)
+    .sort((a,b)=>b.start.localeCompare(a.start))
+    .map(p=>({p,n:(p.q&&p.q[id])||1,pj:S.projects.get(p.project)||null,days:Math.round((parse(p.end||p.start)-parse(p.start))/864e5)+1}));
+}
+function itemHistSummary(h){
+  const past=h.filter(x=>(x.p.end||x.p.start)<TODAY),gg=past.reduce((s,x)=>s+x.days,0),last=past[0];
+  return {past,fut:h.filter(x=>(x.p.end||x.p.start)>=TODAY).reverse(),gg,last};
 }
 function lanes(list){const end=[];return list.map(b=>{let l=end.findIndex(e=>e<b.start);if(l<0){l=end.length;end.push('')}end[l]=b.end;return{...b,lane:l}})}
 
