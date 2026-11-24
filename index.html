@@ -1221,6 +1221,8 @@ SCR.home={
     for(let i=0;i<14&&n<5;i++){const d=addD(TODAY,i),ev=dayEvents(d);if(!ev.length&&i>1)continue;n++;
       const lab=i===0?'Oggi':i===1?'Domani':cap(fmtWDP.format(parse(d)).split(' ')[0]);
       days+=`<div class="hm-day"><div class="dl"><b class="${i===0?'y':''}">${esc(lab)}</b><small>${esc(fmtWDP.format(parse(d)))}</small></div><div class="evs">${ev.map(evLine).join('')||'<span class="mu">Niente in programma</span>'}</div></div>`}
+    if(showGear()){const gl=gearOut(7);const bad=gl.filter(x=>x.c).length,empty=gl.filter(x=>!x.n&&x.p.start>=TODAY).length;
+      h+=`<div class="sec">Attrezzatura in uscita <small style="font-family:var(--f-body);font-size:12px;color:var(--muted);letter-spacing:0">7 giorni${bad?` · <span class="bad">${bad} conflitti</span>`:''}${empty?` · <span class="warn">${empty} vuote</span>`:''}</small></div><div class="list">${gl.map(x=>`<div class="it" data-go="prod" data-id="${x.p.id}" style="border-left:4px solid ${pc(x.p)}"><span class="mid"><span class="t">${esc(x.p.name)}</span><span class="s">${esc(range(x.p))} · <b>${x.n} pz</b> · <span class="${x.state==='bad'?'bad':x.state==='warn'?'warn':x.lvl}">${x.c?x.c+' conflitt'+(x.c>1?'i':'o'):!x.n?'senza attrezzatura':esc(x.tag)}</span></span></span>${IC.chev}</div>`).join('')||'<div class="empty" style="padding:16px"><b>Niente in uscita</b></div>'}</div>`;}
     h+=`<div class="sec" style="display:flex;justify-content:space-between;align-items:baseline">La tua settimana<button class="lnk" data-act="myProfile">tutta →</button></div>
       <div class="hm-leg"><span><span class="kd k-cal">CAL</span>il tuo Calendar</span><span><span class="kd k-set">SET</span>produzioni</span><span><span class="kd k-post">POST</span>lavorazioni</span></div><div class="list">${days}</div>`;
     if(S.cal&&!S.cal.ok)h+=`<p class="tm-src">${esc(S.cal.why||'Calendario non collegato')} Vedi solo i lavori del foglio Flussi.</p>`;
@@ -1401,6 +1403,23 @@ function itemHistSummary(h){
   const past=h.filter(x=>(x.p.end||x.p.start)<TODAY),gg=past.reduce((s,x)=>s+x.days,0),last=past[0];
   return {past,fut:h.filter(x=>(x.p.end||x.p.start)>=TODAY).reverse(),gg,last};
 }
+
+/* responsabile attrezzatura: produzioni in uscita e rientri */
+function gearOut(days){
+  const lim=addD(TODAY,days),ieri=addD(TODAY,-1);
+  return prodsSorted().filter(p=>p.end>=ieri&&p.start<=lim).map(p=>{
+    const n=units(p),c=clashes(p);
+    let tag,lvl='';
+    if(p.end<TODAY){tag='rientrata ieri';lvl='mu'}
+    else if(p.end===TODAY&&p.start<TODAY){tag='rientra oggi';lvl='warn'}
+    else if(p.start<TODAY){tag='fuori adesso';lvl='ok'}
+    else if(p.start===TODAY){tag='esce oggi';lvl='warn'}
+    else if(p.start===addD(TODAY,1)){tag='esce domani';lvl='warn'}
+    else tag=whenS(p.start);
+    return {p,n,c,tag,lvl,state:c?'bad':!n?'warn':'ok'};
+  });
+}
+const showGear=()=>S.role==='admin';
 function lanes(list){const end=[];return list.map(b=>{let l=end.findIndex(e=>e<b.start);if(l<0){l=end.length;end.push('')}end[l]=b.end;return{...b,lane:l}})}
 
 const monday=s=>{const d=parse(s);const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return iso(d)};
