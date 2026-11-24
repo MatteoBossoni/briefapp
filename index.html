@@ -1133,6 +1133,17 @@ function dayEvents(d,filter){
     if(e.src){const i=ev.findIndex(x=>x.kind==='cal'&&x.t.toLowerCase()===t.toLowerCase());if(i>=0)ev.splice(i,1)}
     ev.push({t,kind,src:e.src||'',a:all?'':e.s.slice(11,16),b:all||en>d?'':e.e.slice(11,16),all,loc:e.loc,warn:/^⚠️/.test(e.t),prod:e.prod||''});
   }
+  /* produzioni dell'app: tutte per chi gestisce l'attrezzatura, altrimenti quelle in cui sei in crew */
+  const mu=myUser();
+  for(const p of (S.prods?S.prods.values():[])){
+    if(!p.start||p.start>d||(p.end||p.start)<d)continue;
+    if(!(S.role==='admin'||(mu&&(p.crew||[]).some(n=>sameName(n,mu.name)))))continue;
+    const lo=String(p.name).toLowerCase();
+    const m=ev.find(e=>e.src==='riprese'&&e.t.toLowerCase()===lo);
+    if(m){m.prod=p.id;continue}
+    const c=ev.find(e=>e.kind==='cal'&&e.t.toLowerCase()===lo);if(c){c.kind='set';c.prod=p.id;continue}
+    ev.push({t:p.name,kind:'set',src:'app',a:'',b:'',all:true,loc:'',prod:p.id,warn:clashes(p)>0});
+  }
   const me=myPerson();
   if(me)for(const x of me.items||[]){
     if(x.from>d||x.to<d)continue;
